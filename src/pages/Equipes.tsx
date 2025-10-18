@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -84,10 +85,8 @@ export default function Equipes() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {equipes.map((equipe) => (
-            <Card
-              key={equipe.id}
-              className="overflow-hidden transition-all hover:shadow-lg cursor-pointer group"
-            >
+            <Link key={equipe.id} to={`/equipes/${equipe.id}`}>
+              <Card className="overflow-hidden transition-all hover:shadow-lg cursor-pointer group">
               <div 
                 className="h-2" 
                 style={{ 
@@ -170,6 +169,7 @@ export default function Equipes() {
                 </div>
               </CardContent>
             </Card>
+            </Link>
           ))}
         </div>
       )}

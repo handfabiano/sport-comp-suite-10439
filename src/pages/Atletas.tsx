@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -102,10 +103,8 @@ export default function Atletas() {
           {atletas.map((atleta) => {
             const idade = calcularIdade(atleta.data_nascimento);
             return (
-              <Card
-                key={atleta.id}
-                className="overflow-hidden transition-all hover:shadow-lg cursor-pointer group"
-              >
+              <Link key={atleta.id} to={`/atletas/${atleta.id}`}>
+                <Card className="overflow-hidden transition-all hover:shadow-lg cursor-pointer group">
                 <div className="h-2 bg-gradient-primary" />
                 <CardContent className="pt-6">
                   <div className="flex gap-4">
@@ -191,6 +190,7 @@ export default function Atletas() {
                   </div>
                 </CardContent>
               </Card>
+              </Link>
             );
           })}
         </div>

@@ -9,7 +9,9 @@ import Dashboard from "./pages/Dashboard";
 import Eventos from "./pages/Eventos";
 import EventoDetalhes from "./pages/EventoDetalhes";
 import Atletas from "./pages/Atletas";
+import AtletaDetalhes from "./pages/AtletaDetalhes";
 import Equipes from "./pages/Equipes";
+import EquipeDetalhes from "./pages/EquipeDetalhes";
 import Partidas from "./pages/Partidas";
 import Rankings from "./pages/Rankings";
 import NotFound from "./pages/NotFound";
@@ -30,7 +32,9 @@ const App = () => (
             <Route path="/eventos" element={<Eventos />} />
             <Route path="/eventos/:id" element={<EventoDetalhes />} />
             <Route path="/atletas" element={<Atletas />} />
+            <Route path="/atletas/:id" element={<AtletaDetalhes />} />
             <Route path="/equipes" element={<Equipes />} />
+            <Route path="/equipes/:id" element={<EquipeDetalhes />} />
             <Route path="/partidas" element={<Partidas />} />
             <Route path="/rankings" element={<Rankings />} />
           </Route>
