@@ -104,6 +104,7 @@ export default function Eventos() {
             <Card
               key={evento.id}
               className="overflow-hidden transition-all hover:shadow-lg cursor-pointer group"
+              onClick={() => window.location.href = `/eventos/${evento.id}`}
             >
               <div className="h-2 bg-gradient-primary" />
               <CardHeader>

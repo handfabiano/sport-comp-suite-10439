@@ -7,6 +7,7 @@ import { Layout } from "./components/Layout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Eventos from "./pages/Eventos";
+import EventoDetalhes from "./pages/EventoDetalhes";
 import Atletas from "./pages/Atletas";
 import Equipes from "./pages/Equipes";
 import Partidas from "./pages/Partidas";
@@ -27,6 +28,7 @@ const App = () => (
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/eventos" element={<Eventos />} />
+            <Route path="/eventos/:id" element={<EventoDetalhes />} />
             <Route path="/atletas" element={<Atletas />} />
             <Route path="/equipes" element={<Equipes />} />
             <Route path="/partidas" element={<Partidas />} />

@@ -178,9 +178,15 @@ export default function PartidaForm({ partidaId, onSuccess, onCancel }: PartidaF
 
     try {
       const partidaData = {
-        ...values,
+        evento_id: values.evento_id,
+        categoria: values.categoria,
+        fase: values.fase,
+        equipe_a_id: values.equipe_a_id,
+        equipe_b_id: values.equipe_b_id,
+        local: values.local,
         data_partida: new Date(values.data_partida).toISOString(),
         arbitro_id: values.arbitro_id || null,
+        observacoes: values.observacoes || null,
       };
 
       if (partidaId) {
