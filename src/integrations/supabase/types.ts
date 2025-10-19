@@ -339,6 +339,7 @@ export type Database = {
           permite_inscricao_aberta: boolean | null
           redes_sociais: Json | null
           responsavel_id: string | null
+          sexo: string | null
           tecnico: string | null
           uniforme_alternativo: Json | null
           uniforme_cor: string | null
@@ -367,6 +368,7 @@ export type Database = {
           permite_inscricao_aberta?: boolean | null
           redes_sociais?: Json | null
           responsavel_id?: string | null
+          sexo?: string | null
           tecnico?: string | null
           uniforme_alternativo?: Json | null
           uniforme_cor?: string | null
@@ -395,6 +397,7 @@ export type Database = {
           permite_inscricao_aberta?: boolean | null
           redes_sociais?: Json | null
           responsavel_id?: string | null
+          sexo?: string | null
           tecnico?: string | null
           uniforme_alternativo?: Json | null
           uniforme_cor?: string | null
