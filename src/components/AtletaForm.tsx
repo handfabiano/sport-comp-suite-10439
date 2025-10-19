@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, X, Save, User } from "lucide-react";
+import { ImageUpload } from "./ImageUpload";
 
 interface AtletaFormProps {
   atleta?: any;
@@ -73,6 +74,9 @@ export default function AtletaForm({ atleta, onSuccess, trigger }: AtletaFormPro
     tiktok: atleta?.redes_sociais?.tiktok || "",
   });
   
+  // Foto
+  const [fotoUrl, setFotoUrl] = useState(atleta?.foto_url || "");
+  
   // Status
   const [ativo, setAtivo] = useState(atleta?.ativo ?? true);
   const [transferivel, setTransferivel] = useState(atleta?.transferivel ?? false);
@@ -128,6 +132,7 @@ export default function AtletaForm({ atleta, onSuccess, trigger }: AtletaFormPro
         parentesco_responsavel: parentescoResponsavel || null,
         clubes_anteriores: clubesAnteriores,
         redes_sociais: redesSociais,
+        foto_url: fotoUrl || null,
         ativo,
         transferivel,
         observacoes: observacoes || null,
@@ -210,6 +215,16 @@ export default function AtletaForm({ atleta, onSuccess, trigger }: AtletaFormPro
             </TabsList>
 
             <TabsContent value="pessoal" className="space-y-4 mt-4">
+              <div className="mb-6">
+                <ImageUpload
+                  bucket="atletas"
+                  currentImageUrl={fotoUrl}
+                  onImageUploaded={setFotoUrl}
+                  label="Foto do Atleta"
+                  maxSizeMB={5}
+                />
+              </div>
+              
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <Label htmlFor="nome">Nome Completo *</Label>

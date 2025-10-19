@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, X, Save, Shirt } from "lucide-react";
+import { ImageUpload } from "./ImageUpload";
 
 interface EquipeFormProps {
   equipe?: any;
@@ -58,6 +59,9 @@ export default function EquipeForm({ equipe, onSuccess, trigger }: EquipeFormPro
   const [patrocinadores, setPatrocinadores] = useState<string[]>(equipe?.patrocinadores || []);
   const [novoPatrocinador, setNovoPatrocinador] = useState("");
   
+  // Logo
+  const [logoUrl, setLogoUrl] = useState(equipe?.logo_url || "");
+  
   // Redes sociais
   const [redesSociais, setRedesSociais] = useState({
     instagram: equipe?.redes_sociais?.instagram || "",
@@ -104,6 +108,7 @@ export default function EquipeForm({ equipe, onSuccess, trigger }: EquipeFormPro
         ativa,
         contato_tecnico: contatoTecnico,
         contato_responsavel: contatoResponsavel,
+        logo_url: logoUrl || null,
         patrocinadores,
         redes_sociais: redesSociais,
         observacoes,
@@ -171,6 +176,17 @@ export default function EquipeForm({ equipe, onSuccess, trigger }: EquipeFormPro
             </TabsList>
 
             <TabsContent value="basico" className="space-y-4 mt-4">
+              <div className="mb-6">
+                <ImageUpload
+                  bucket="equipes"
+                  currentImageUrl={logoUrl}
+                  onImageUploaded={setLogoUrl}
+                  label="Logo da Equipe"
+                  accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                  maxSizeMB={5}
+                />
+              </div>
+              
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <Label htmlFor="nome">Nome da Equipe *</Label>

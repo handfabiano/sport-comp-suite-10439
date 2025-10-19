@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, X, Save } from "lucide-react";
+import { ImageUpload } from "./ImageUpload";
 
 interface EventoFormProps {
   evento?: any;
@@ -59,6 +60,9 @@ export default function EventoForm({ evento, onSuccess, trigger }: EventoFormPro
   const [patrocinadores, setPatrocinadores] = useState<string[]>(evento?.patrocinadores || []);
   const [novoPatrocinador, setNovoPatrocinador] = useState("");
   
+  // Banner
+  const [bannerUrl, setBannerUrl] = useState(evento?.banner_url || "");
+  
   // Contato e redes sociais
   const [contatoOrganizador, setContatoOrganizador] = useState(evento?.contato_organizador || "");
   const [redesSociais, setRedesSociais] = useState({
@@ -104,6 +108,7 @@ export default function EventoForm({ evento, onSuccess, trigger }: EventoFormPro
         permite_transferencia: permiteTransferencia,
         categorias,
         patrocinadores,
+        banner_url: bannerUrl || null,
         contato_organizador: contatoOrganizador,
         redes_sociais: redesSociais,
         regras_especificas: regrasEspecificas,
@@ -187,6 +192,16 @@ export default function EventoForm({ evento, onSuccess, trigger }: EventoFormPro
             </TabsList>
 
             <TabsContent value="basico" className="space-y-4 mt-4">
+              <div className="mb-6">
+                <ImageUpload
+                  bucket="eventos"
+                  currentImageUrl={bannerUrl}
+                  onImageUploaded={setBannerUrl}
+                  label="Banner do Evento"
+                  maxSizeMB={10}
+                />
+              </div>
+              
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <Label htmlFor="nome">Nome do Evento *</Label>
