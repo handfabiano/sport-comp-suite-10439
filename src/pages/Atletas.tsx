@@ -4,7 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Users, Phone, Mail, MapPin, Calendar, Activity } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Users, Phone, Mail, MapPin, Calendar, Activity, Edit, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import AtletaForm from "@/components/AtletaForm";
 
 interface Atleta {
@@ -28,6 +31,8 @@ interface Atleta {
 export default function Atletas() {
   const [atletas, setAtletas] = useState<Atleta[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editingAtleta, setEditingAtleta] = useState<any>(null);
 
   useEffect(() => {
     fetchAtletas();
@@ -47,6 +52,21 @@ export default function Atletas() {
       setAtletas(data);
     }
     setLoading(false);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+
+    const { error } = await supabase.from("atletas").delete().eq("id", deleteId);
+
+    if (error) {
+      toast.error("Erro ao excluir atleta: " + error.message);
+      return;
+    }
+
+    toast.success("Atleta excluído com sucesso!");
+    setDeleteId(null);
+    fetchAtletas();
   };
 
   const calcularIdade = (dataNascimento: string | null) => {
@@ -103,8 +123,8 @@ export default function Atletas() {
           {atletas.map((atleta) => {
             const idade = calcularIdade(atleta.data_nascimento);
             return (
-              <Link key={atleta.id} to={`/atletas/${atleta.id}`}>
-                <Card className="overflow-hidden transition-all hover:shadow-lg cursor-pointer group">
+              <Card key={atleta.id} className="overflow-hidden transition-all hover:shadow-lg group">
+                <Link to={`/atletas/${atleta.id}`}>
                 <div className="h-2 bg-gradient-primary" />
                 <CardContent className="pt-6">
                   <div className="flex gap-4">
@@ -189,12 +209,66 @@ export default function Atletas() {
                     </div>
                   </div>
                 </CardContent>
+                </Link>
+                <div className="flex gap-2 p-4 pt-0 border-t">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setEditingAtleta(atleta);
+                    }}
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    Editar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="flex-1"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setDeleteId(atleta.id);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Excluir
+                  </Button>
+                </div>
               </Card>
-              </Link>
             );
           })}
         </div>
       )}
+
+      {editingAtleta && (
+        <AtletaForm
+          atleta={editingAtleta}
+          onSuccess={() => {
+            setEditingAtleta(null);
+            fetchAtletas();
+          }}
+          trigger={<div />}
+        />
+      )}
+
+      <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este atleta? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

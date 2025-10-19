@@ -3,7 +3,10 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users2, Users, MapPin, Trophy, Shirt, Phone } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Users2, Users, MapPin, Trophy, Shirt, Phone, Edit, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import EquipeForm from "@/components/EquipeForm";
 
 interface Equipe {
@@ -24,6 +27,8 @@ interface Equipe {
 export default function Equipes() {
   const [equipes, setEquipes] = useState<Equipe[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editingEquipe, setEditingEquipe] = useState<any>(null);
 
   useEffect(() => {
     fetchEquipes();
@@ -43,6 +48,21 @@ export default function Equipes() {
       setEquipes(data);
     }
     setLoading(false);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+
+    const { error } = await supabase.from("equipes").delete().eq("id", deleteId);
+
+    if (error) {
+      toast.error("Erro ao excluir equipe: " + error.message);
+      return;
+    }
+
+    toast.success("Equipe excluída com sucesso!");
+    setDeleteId(null);
+    fetchEquipes();
   };
 
   return (
@@ -85,8 +105,8 @@ export default function Equipes() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {equipes.map((equipe) => (
-            <Link key={equipe.id} to={`/equipes/${equipe.id}`}>
-              <Card className="overflow-hidden transition-all hover:shadow-lg cursor-pointer group">
+            <Card key={equipe.id} className="overflow-hidden transition-all hover:shadow-lg group">
+              <Link to={`/equipes/${equipe.id}`}>
               <div 
                 className="h-2" 
                 style={{ 
@@ -168,11 +188,65 @@ export default function Equipes() {
                   )}
                 </div>
               </CardContent>
+              </Link>
+              <div className="flex gap-2 p-4 pt-0 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setEditingEquipe(equipe);
+                  }}
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  Editar
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="flex-1"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setDeleteId(equipe.id);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Excluir
+                </Button>
+              </div>
             </Card>
-            </Link>
           ))}
         </div>
       )}
+
+      {editingEquipe && (
+        <EquipeForm
+          equipe={editingEquipe}
+          onSuccess={() => {
+            setEditingEquipe(null);
+            fetchEquipes();
+          }}
+          trigger={<div />}
+        />
+      )}
+
+      <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir esta equipe? Esta ação não pode ser desfeita e todos os atletas vinculados ficarão sem equipe.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

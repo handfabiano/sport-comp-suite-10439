@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Users, Trophy, DollarSign } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Calendar, MapPin, Users, Trophy, DollarSign, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toast } from "sonner";
 import EventoForm from "@/components/EventoForm";
 
 interface Evento {
@@ -40,6 +43,8 @@ const statusLabels = {
 export default function Eventos() {
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editingEvento, setEditingEvento] = useState<any>(null);
 
   useEffect(() => {
     fetchEventos();
@@ -56,6 +61,21 @@ export default function Eventos() {
       setEventos(data);
     }
     setLoading(false);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+
+    const { error } = await supabase.from("eventos").delete().eq("id", deleteId);
+
+    if (error) {
+      toast.error("Erro ao excluir evento: " + error.message);
+      return;
+    }
+
+    toast.success("Evento excluído com sucesso!");
+    setDeleteId(null);
+    fetchEventos();
   };
 
   return (
@@ -103,24 +123,32 @@ export default function Eventos() {
           {eventos.map((evento) => (
             <Card
               key={evento.id}
-              className="overflow-hidden transition-all hover:shadow-lg cursor-pointer group"
-              onClick={() => window.location.href = `/eventos/${evento.id}`}
+              className="overflow-hidden transition-all hover:shadow-lg group"
             >
-              <div className="h-2 bg-gradient-primary" />
-              <CardHeader>
+              <div 
+                className="h-2 bg-gradient-primary cursor-pointer" 
+                onClick={() => window.location.href = `/eventos/${evento.id}`}
+              />
+              <CardHeader 
+                className="cursor-pointer"
+                onClick={() => window.location.href = `/eventos/${evento.id}`}
+              >
                 <div className="flex items-start justify-between mb-2">
                   <CardTitle className="group-hover:text-primary transition-colors">
                     {evento.nome}
                   </CardTitle>
                   <Badge className={statusColors[evento.status as keyof typeof statusColors]}>
-                    {statusLabels[evento.status as keyof typeof statusLabels]}
-                  </Badge>
-                </div>
-                <CardDescription className="line-clamp-2">
-                  {evento.descricao || "Sem descrição"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
+                  {statusLabels[evento.status as keyof typeof statusLabels]}
+                </Badge>
+              </div>
+              <CardDescription className="line-clamp-2">
+                {evento.descricao || "Sem descrição"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent 
+              className="space-y-3 cursor-pointer"
+              onClick={() => window.location.href = `/eventos/${evento.id}`}
+            >
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <MapPin className="h-4 w-4 flex-shrink-0" />
                   <span>{evento.local}</span>
@@ -163,10 +191,64 @@ export default function Eventos() {
                   </div>
                 )}
               </CardContent>
+              <div className="flex gap-2 p-4 pt-0 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingEvento(evento);
+                  }}
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  Editar
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="flex-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteId(evento.id);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Excluir
+                </Button>
+              </div>
             </Card>
           ))}
         </div>
       )}
+
+      {editingEvento && (
+        <EventoForm
+          evento={editingEvento}
+          onSuccess={() => {
+            setEditingEvento(null);
+            fetchEventos();
+          }}
+          trigger={<div />}
+        />
+      )}
+
+      <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita e todas as equipes, partidas e inscrições vinculadas serão removidas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
