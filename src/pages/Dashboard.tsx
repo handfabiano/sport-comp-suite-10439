@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users, Users2, Trophy } from "lucide-react";
+import PlacarTempoReal from "@/components/PlacarTempoReal";
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -91,34 +92,46 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Bem-vindo ao SportManager! 🏆</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-muted-foreground">
-            Este é seu painel de controle para gerenciar eventos esportivos. Aqui você pode:
-          </p>
-          <ul className="space-y-2 text-muted-foreground">
-            <li className="flex items-start gap-2">
-              <span className="text-primary font-bold">•</span>
-              <span>Criar e gerenciar eventos esportivos de diferentes modalidades</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-secondary font-bold">•</span>
-              <span>Cadastrar atletas e montar equipes</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-accent font-bold">•</span>
-              <span>Organizar partidas e registrar resultados</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-info font-bold">•</span>
-              <span>Acompanhar rankings e estatísticas em tempo real</span>
-            </li>
-          </ul>
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <PlacarTempoReal />
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Bem-vindo ao SportManager! 🏆</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              Este é seu painel de controle para gerenciar eventos esportivos. Aqui você pode:
+            </p>
+            <ul className="space-y-2 text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="text-primary font-bold">•</span>
+                <span>Criar e gerenciar eventos esportivos de diferentes modalidades</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-secondary font-bold">•</span>
+                <span>Cadastrar atletas e montar equipes</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-accent font-bold">•</span>
+                <span>Organizar partidas e registrar resultados</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-info font-bold">•</span>
+                <span>Acompanhar rankings e estatísticas em tempo real</span>
+              </li>
+            </ul>
+            <div className="pt-4 border-t">
+              <p className="text-sm text-muted-foreground">
+                <span className="font-semibold text-green-600 dark:text-green-400">
+                  Novo:
+                </span>{" "}
+                Rankings são atualizados automaticamente após cada partida finalizada!
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

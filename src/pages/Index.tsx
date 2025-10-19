@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Trophy, TrendingUp, Users, Newspaper, ArrowRight } from "lucide-react";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import heroImage from "@/assets/hero-sports.jpg";
 import sponsor1 from "@/assets/sponsor-1.png";
 import sponsor2 from "@/assets/sponsor-2.png";
@@ -354,7 +355,7 @@ const Index = () => {
             {noticias.map((noticia) => (
               <Card key={noticia.id} className="overflow-hidden hover:shadow-lg transition-all group cursor-pointer">
                 <div className="relative h-48 overflow-hidden">
-                  <img
+                  <OptimizedImage
                     src={noticia.imagem}
                     alt={noticia.titulo}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
@@ -392,7 +393,11 @@ const Index = () => {
                 key={index}
                 className="flex items-center justify-center p-6 bg-background rounded-lg hover:shadow-md transition-shadow grayscale hover:grayscale-0"
               >
-                <img src={sponsor} alt={`Patrocinador ${index + 1}`} className="h-12 w-auto object-contain" />
+                <OptimizedImage
+                  src={sponsor}
+                  alt={`Patrocinador ${index + 1}`}
+                  className="h-12 w-auto object-contain"
+                />
               </div>
             ))}
           </div>
