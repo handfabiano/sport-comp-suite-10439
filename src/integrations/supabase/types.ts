@@ -153,6 +153,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "atletas_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "atletas_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -445,10 +452,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "inscricoes_atleta_id_fkey"
+            columns: ["atleta_id"]
+            isOneToOne: false
+            referencedRelation: "atletas_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "inscricoes_equipe_id_fkey"
             columns: ["equipe_id"]
             isOneToOne: false
             referencedRelation: "equipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscricoes_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes_public"
             referencedColumns: ["id"]
           },
           {
@@ -558,10 +579,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "partidas_equipe_a_id_fkey"
+            columns: ["equipe_a_id"]
+            isOneToOne: false
+            referencedRelation: "equipes_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "partidas_equipe_b_id_fkey"
             columns: ["equipe_b_id"]
             isOneToOne: false
             referencedRelation: "equipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partidas_equipe_b_id_fkey"
+            columns: ["equipe_b_id"]
+            isOneToOne: false
+            referencedRelation: "equipes_public"
             referencedColumns: ["id"]
           },
           {
@@ -667,10 +702,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "rankings_atleta_id_fkey"
+            columns: ["atleta_id"]
+            isOneToOne: false
+            referencedRelation: "atletas_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "rankings_equipe_id_fkey"
             columns: ["equipe_id"]
             isOneToOne: false
             referencedRelation: "equipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rankings_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes_public"
             referencedColumns: ["id"]
           },
           {
@@ -684,7 +733,134 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      atletas_public: {
+        Row: {
+          altura: number | null
+          ativo: boolean | null
+          categoria: string | null
+          created_at: string | null
+          equipe_id: string | null
+          foto_url: string | null
+          id: string | null
+          nome: string | null
+          numero_uniforme: number | null
+          pe_dominante: string | null
+          peso: number | null
+          posicao: string | null
+        }
+        Insert: {
+          altura?: number | null
+          ativo?: boolean | null
+          categoria?: string | null
+          created_at?: string | null
+          equipe_id?: string | null
+          foto_url?: string | null
+          id?: string | null
+          nome?: string | null
+          numero_uniforme?: number | null
+          pe_dominante?: string | null
+          peso?: number | null
+          posicao?: string | null
+        }
+        Update: {
+          altura?: number | null
+          ativo?: boolean | null
+          categoria?: string | null
+          created_at?: string | null
+          equipe_id?: string | null
+          foto_url?: string | null
+          id?: string | null
+          nome?: string | null
+          numero_uniforme?: number | null
+          pe_dominante?: string | null
+          peso?: number | null
+          posicao?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "atletas_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "atletas_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipes_public: {
+        Row: {
+          ano_fundacao: number | null
+          ativa: boolean | null
+          categoria: string | null
+          cidade: string | null
+          created_at: string | null
+          estadio_casa: string | null
+          estatisticas: Json | null
+          evento_id: string | null
+          id: string | null
+          logo_url: string | null
+          modalidade: Database["public"]["Enums"]["sport_modality"] | null
+          nome: string | null
+          numero_atletas: number | null
+          redes_sociais: Json | null
+          uniforme_alternativo: Json | null
+          uniforme_cor: string | null
+          uniforme_principal: Json | null
+        }
+        Insert: {
+          ano_fundacao?: number | null
+          ativa?: boolean | null
+          categoria?: string | null
+          cidade?: string | null
+          created_at?: string | null
+          estadio_casa?: string | null
+          estatisticas?: Json | null
+          evento_id?: string | null
+          id?: string | null
+          logo_url?: string | null
+          modalidade?: Database["public"]["Enums"]["sport_modality"] | null
+          nome?: string | null
+          numero_atletas?: number | null
+          redes_sociais?: Json | null
+          uniforme_alternativo?: Json | null
+          uniforme_cor?: string | null
+          uniforme_principal?: Json | null
+        }
+        Update: {
+          ano_fundacao?: number | null
+          ativa?: boolean | null
+          categoria?: string | null
+          cidade?: string | null
+          created_at?: string | null
+          estadio_casa?: string | null
+          estatisticas?: Json | null
+          evento_id?: string | null
+          id?: string | null
+          logo_url?: string | null
+          modalidade?: Database["public"]["Enums"]["sport_modality"] | null
+          nome?: string | null
+          numero_atletas?: number | null
+          redes_sociais?: Json | null
+          uniforme_alternativo?: Json | null
+          uniforme_cor?: string | null
+          uniforme_principal?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipes_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       gerar_partidas_evento: {
