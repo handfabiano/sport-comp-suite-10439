@@ -22,6 +22,7 @@ import CadastroSucesso from "./pages/CadastroSucesso";
 import CadastroResponsavel from "./pages/CadastroResponsavel";
 import Responsaveis from "./pages/Responsaveis";
 import MinhasEquipes from "./pages/MinhasEquipes";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/cadastro-sucesso" element={<CadastroSucesso />} />
             <Route element={<Layout />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/admin" element={<Admin />} />
               <Route path="/eventos" element={<Eventos />} />
               <Route path="/eventos/:id" element={<EventoDetalhes />} />
               <Route path="/atletas" element={<Atletas />} />

@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   Calendar,
   Users,
@@ -7,6 +8,7 @@ import {
   LayoutDashboard,
   Medal,
   LogOut,
+  Shield,
 } from "lucide-react";
 import {
   Sidebar as SidebarComponent,
@@ -23,20 +25,47 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-const menuItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Eventos", url: "/eventos", icon: Calendar },
-  { title: "Atletas", url: "/atletas", icon: Users },
-  { title: "Equipes", url: "/equipes", icon: Users2 },
-  { title: "Minhas Equipes", url: "/minhas-equipes", icon: Users2 },
-  { title: "Partidas", url: "/partidas", icon: Trophy },
-  { title: "Rankings", url: "/rankings", icon: Medal },
-  { title: "Responsáveis", url: "/responsaveis", icon: Users },
+const allMenuItems = [
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, roles: ["admin", "organizador", "responsavel", "atleta"] },
+  { title: "Administração", url: "/admin", icon: Shield, roles: ["admin"] },
+  { title: "Eventos", url: "/eventos", icon: Calendar, roles: ["admin", "organizador"] },
+  { title: "Atletas", url: "/atletas", icon: Users, roles: ["admin", "organizador"] },
+  { title: "Equipes", url: "/equipes", icon: Users2, roles: ["admin", "organizador"] },
+  { title: "Minhas Equipes", url: "/minhas-equipes", icon: Users2, roles: ["responsavel"] },
+  { title: "Partidas", url: "/partidas", icon: Trophy, roles: ["admin", "organizador"] },
+  { title: "Rankings", url: "/rankings", icon: Medal, roles: ["admin", "organizador", "responsavel", "atleta"] },
+  { title: "Responsáveis", url: "/responsaveis", icon: Users, roles: ["admin", "organizador"] },
 ];
 
 export function Sidebar() {
   const { open } = useSidebar();
   const navigate = useNavigate();
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [menuItems, setMenuItems] = useState(allMenuItems);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+
+      const role = data?.role || null;
+      setUserRole(role);
+      
+      // Filtrar itens do menu baseado na role
+      const filtered = allMenuItems.filter(item => 
+        !item.roles || item.roles.includes(role || "")
+      );
+      setMenuItems(filtered);
+    };
+
+    fetchUserRole();
+  }, []);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();

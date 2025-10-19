@@ -12,26 +12,103 @@ export default function Dashboard() {
     equipes: 0,
     partidas: 0,
   });
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+
+      setUserRole(data?.role || null);
+    };
+
+    fetchUserRole();
+  }, []);
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [eventos, atletas, equipes, partidas] = await Promise.all([
-        supabase.from("eventos").select("id", { count: "exact", head: true }),
-        supabase.from("atletas").select("id", { count: "exact", head: true }),
-        supabase.from("equipes").select("id", { count: "exact", head: true }),
-        supabase.from("partidas").select("id", { count: "exact", head: true }),
-      ]);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      setStats({
-        eventos: eventos.count || 0,
-        atletas: atletas.count || 0,
-        equipes: equipes.count || 0,
-        partidas: partidas.count || 0,
-      });
+      // Para organizadores, mostrar apenas seus eventos e dados relacionados
+      let eventosQuery = supabase.from("eventos").select("id", { count: "exact", head: true });
+      
+      if (userRole === "organizador") {
+        eventosQuery = eventosQuery.eq("organizador_id", user.id);
+        
+        // Buscar equipes apenas dos eventos do organizador
+        const { data: eventosData } = await supabase
+          .from("eventos")
+          .select("id")
+          .eq("organizador_id", user.id);
+        
+        const eventoIds = eventosData?.map(e => e.id) || [];
+        
+        const [eventos, equipes, partidas] = await Promise.all([
+          eventosQuery,
+          supabase.from("equipes").select("id", { count: "exact", head: true }).in("evento_id", eventoIds),
+          supabase.from("partidas").select("id", { count: "exact", head: true }).in("evento_id", eventoIds),
+        ]);
+
+        // Buscar atletas das equipes
+        const equipesIds = (await supabase.from("equipes").select("id").in("evento_id", eventoIds)).data?.map(e => e.id) || [];
+        const atletas = await supabase.from("atletas").select("id", { count: "exact", head: true }).in("equipe_id", equipesIds);
+
+        setStats({
+          eventos: eventos.count || 0,
+          atletas: atletas.count || 0,
+          equipes: equipes.count || 0,
+          partidas: partidas.count || 0,
+        });
+      } else if (userRole === "responsavel") {
+        // Para responsáveis, mostrar apenas suas equipes
+        const { data: equipesData } = await supabase
+          .from("user_roles")
+          .select("equipe_id")
+          .eq("user_id", user.id)
+          .eq("role", "responsavel");
+
+        const equipeIds = equipesData?.map(e => e.equipe_id).filter(Boolean) || [];
+        
+        const [equipes, atletas] = await Promise.all([
+          supabase.from("equipes").select("id", { count: "exact", head: true }).in("id", equipeIds),
+          supabase.from("atletas").select("id", { count: "exact", head: true }).in("equipe_id", equipeIds),
+        ]);
+
+        setStats({
+          eventos: 0,
+          atletas: atletas.count || 0,
+          equipes: equipes.count || 0,
+          partidas: 0,
+        });
+      } else {
+        // Admin vê tudo
+        const [eventos, atletas, equipes, partidas] = await Promise.all([
+          eventosQuery,
+          supabase.from("atletas").select("id", { count: "exact", head: true }),
+          supabase.from("equipes").select("id", { count: "exact", head: true }),
+          supabase.from("partidas").select("id", { count: "exact", head: true }),
+        ]);
+
+        setStats({
+          eventos: eventos.count || 0,
+          atletas: atletas.count || 0,
+          equipes: equipes.count || 0,
+          partidas: partidas.count || 0,
+        });
+      }
     };
 
-    fetchStats();
-  }, []);
+    if (userRole) {
+      fetchStats();
+    }
+  }, [userRole]);
 
   const cards = [
     {
