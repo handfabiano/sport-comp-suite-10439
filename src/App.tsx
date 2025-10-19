@@ -19,6 +19,7 @@ import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 import CadastroAtleta from "./pages/CadastroAtleta";
 import CadastroSucesso from "./pages/CadastroSucesso";
+import CadastroResponsavel from "./pages/CadastroResponsavel";
 import Responsaveis from "./pages/Responsaveis";
 import MinhasEquipes from "./pages/MinhasEquipes";
 
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/cadastro-atleta" element={<CadastroAtleta />} />
+            <Route path="/cadastro-responsavel" element={<CadastroResponsavel />} />
             <Route path="/cadastro-sucesso" element={<CadastroSucesso />} />
             <Route element={<Layout />}>
               <Route path="/dashboard" element={<Dashboard />} />

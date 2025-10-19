@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Users, MapPin, Trophy } from "lucide-react";
+import { Users, MapPin, Trophy, Plus } from "lucide-react";
+import EquipeForm from "@/components/EquipeForm";
 
 interface Equipe {
   id: string;
@@ -108,11 +110,22 @@ export default function MinhasEquipes() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Minhas Equipes</h1>
-        <p className="text-muted-foreground">
-          Equipes que você é responsável
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold">Minhas Equipes</h1>
+          <p className="text-muted-foreground">
+            Equipes que você é responsável
+          </p>
+        </div>
+        <EquipeForm 
+          onSuccess={fetchMinhasEquipes}
+          trigger={
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Equipe
+            </Button>
+          }
+        />
       </div>
 
       {equipes.length === 0 ? (

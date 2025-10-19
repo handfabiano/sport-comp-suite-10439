@@ -11,6 +11,7 @@ import { ArrowLeft, Users, Trophy, Calendar, MapPin, Shirt, Phone, Shield } from
 import GerenciarConvites from "@/components/GerenciarConvites";
 import AssignTeamManager from "@/components/AssignTeamManager";
 import AthleteInvitation from "@/components/AthleteInvitation";
+import HistoricoParticipacoes from "@/components/HistoricoParticipacoes";
 
 interface Equipe {
   id: string;
@@ -374,9 +375,10 @@ const EquipeDetalhes = () => {
       </div>
 
       <Tabs defaultValue="elenco" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="elenco">Elenco</TabsTrigger>
           <TabsTrigger value="convites">Convites</TabsTrigger>
+          <TabsTrigger value="historico">Histórico</TabsTrigger>
         </TabsList>
 
         <TabsContent value="elenco">
@@ -427,6 +429,10 @@ const EquipeDetalhes = () => {
 
         <TabsContent value="convites">
           <GerenciarConvites equipeId={id!} categoria={equipe.categoria} />
+        </TabsContent>
+
+        <TabsContent value="historico">
+          <HistoricoParticipacoes equipeId={id!} />
         </TabsContent>
       </Tabs>
     </div>

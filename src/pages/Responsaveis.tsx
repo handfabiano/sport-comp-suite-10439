@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ResponsavelForm } from "@/components/ResponsavelForm";
+import ManagerInvitation from "@/components/ManagerInvitation";
 import { toast } from "sonner";
 import { Mail, Phone, FileText, Trash2, Users } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -116,7 +117,10 @@ export default function Responsaveis() {
             Gerencie os responsáveis pelas equipes
           </p>
         </div>
-        <ResponsavelForm onSuccess={fetchResponsaveis} />
+        <div className="flex gap-2">
+          <ManagerInvitation />
+          <ResponsavelForm onSuccess={fetchResponsaveis} />
+        </div>
       </div>
 
       {responsaveis.length === 0 ? (

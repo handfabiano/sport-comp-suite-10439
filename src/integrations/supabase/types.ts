@@ -635,6 +635,39 @@ export type Database = {
           },
         ]
       }
+      manager_invite_tokens: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          email: string
+          expires_at: string
+          id: string
+          nome_responsavel: string | null
+          token: string
+          used: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          email: string
+          expires_at: string
+          id?: string
+          nome_responsavel?: string | null
+          token: string
+          used?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          nome_responsavel?: string | null
+          token?: string
+          used?: boolean | null
+        }
+        Relationships: []
+      }
       partidas: {
         Row: {
           arbitro_id: string | null

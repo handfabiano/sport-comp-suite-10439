@@ -1,1 +1,7 @@
 project_id = "lfntpwnvfbhhwmvdcdyp"
+
+[functions.send-athlete-invite]
+verify_jwt = false
+
+[functions.send-manager-invite]
+verify_jwt = false
