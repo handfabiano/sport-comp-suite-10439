@@ -7,8 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Users, Trophy, Calendar, MapPin, Shirt, Phone } from "lucide-react";
+import { ArrowLeft, Users, Trophy, Calendar, MapPin, Shirt, Phone, Shield } from "lucide-react";
 import GerenciarConvites from "@/components/GerenciarConvites";
+import AssignTeamManager from "@/components/AssignTeamManager";
+import AthleteInvitation from "@/components/AthleteInvitation";
 
 interface Equipe {
   id: string;
@@ -26,6 +28,7 @@ interface Equipe {
   uniforme_principal: any;
   uniforme_alternativo: any;
   estatisticas: any;
+  evento_id: string;
   eventos: {
     nome: string;
     banner_url: string | null;
@@ -48,11 +51,56 @@ const EquipeDetalhes = () => {
   const [equipe, setEquipe] = useState<Equipe | null>(null);
   const [atletas, setAtletas] = useState<Atleta[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isManager, setIsManager] = useState(false);
+  const [isOrganizer, setIsOrganizer] = useState(false);
+  const [eventStarted, setEventStarted] = useState(false);
 
   useEffect(() => {
     fetchEquipe();
     fetchAtletas();
+    checkUserRole();
   }, [id]);
+
+  const checkUserRole = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Verificar se é responsável da equipe
+      const { data: managerRole } = await supabase
+        .from("user_roles")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("equipe_id", id)
+        .eq("role", "responsavel")
+        .single();
+
+      setIsManager(!!managerRole);
+
+      // Verificar se é organizador
+      if (equipe) {
+        const { data: evento } = await supabase
+          .from("eventos")
+          .select("organizador_id, data_inicio, status")
+          .eq("id", equipe.evento_id)
+          .single();
+
+        if (evento) {
+          setIsOrganizer(evento.organizador_id === user.id);
+          
+          // Verificar se o evento já começou
+          const dataInicio = new Date(evento.data_inicio);
+          const hoje = new Date();
+          setEventStarted(
+            dataInicio <= hoje && 
+            (evento.status === 'em_andamento' || evento.status === 'finalizado')
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao verificar role:", error);
+    }
+  };
 
   const fetchEquipe = async () => {
     try {
@@ -117,12 +165,39 @@ const EquipeDetalhes = () => {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <Link to="/equipes">
-        <Button variant="ghost" size="sm">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar
-        </Button>
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link to="/equipes">
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Voltar
+          </Button>
+        </Link>
+        
+        {(isOrganizer || isManager) && (
+          <div className="flex gap-2">
+            {isManager && (
+              <>
+                <AthleteInvitation equipeId={id!} equipeNome={equipe.nome} />
+                {eventStarted && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Shield className="h-3 w-3" />
+                    Evento iniciado - Sem alterações de elenco
+                  </Badge>
+                )}
+              </>
+            )}
+            {isOrganizer && (
+              <AssignTeamManager 
+                equipeId={id!} 
+                onSuccess={() => {
+                  fetchEquipe();
+                  checkUserRole();
+                }} 
+              />
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="md:col-span-1">

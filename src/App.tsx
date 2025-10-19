@@ -17,6 +17,8 @@ import Partidas from "./pages/Partidas";
 import Rankings from "./pages/Rankings";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
+import CadastroAtleta from "./pages/CadastroAtleta";
+import CadastroSucesso from "./pages/CadastroSucesso";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,6 +41,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/cadastro-atleta" element={<CadastroAtleta />} />
+            <Route path="/cadastro-sucesso" element={<CadastroSucesso />} />
             <Route element={<Layout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/eventos" element={<Eventos />} />
