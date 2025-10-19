@@ -6,7 +6,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Users, Trophy, Calendar, MapPin, Shirt, Phone } from "lucide-react";
+import GerenciarConvites from "@/components/GerenciarConvites";
 
 interface Equipe {
   id: string;
@@ -314,49 +316,62 @@ const EquipeDetalhes = () => {
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Elenco ({atletas.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {atletas.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">Nenhum atleta cadastrado nesta equipe.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {atletas.map((atleta) => (
-                <Link key={atleta.id} to={`/atletas/${atleta.id}`}>
-                  <Card className="hover:bg-accent transition-colors">
-                    <CardContent className="p-4 flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src={atleta.foto_url || ""} />
-                        <AvatarFallback>{atleta.nome.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="font-semibold">{atleta.nome}</p>
-                        <div className="flex gap-2 mt-1">
-                          {atleta.numero_uniforme && (
-                            <Badge variant="secondary" className="text-xs">
-                              #{atleta.numero_uniforme}
-                            </Badge>
-                          )}
-                          {atleta.posicao && (
-                            <Badge variant="outline" className="text-xs">
-                              {atleta.posicao}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="elenco" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="elenco">Elenco</TabsTrigger>
+          <TabsTrigger value="convites">Convites</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="elenco">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Elenco ({atletas.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {atletas.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">Nenhum atleta cadastrado nesta equipe.</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {atletas.map((atleta) => (
+                    <Link key={atleta.id} to={`/atletas/${atleta.id}`}>
+                      <Card className="hover:bg-accent transition-colors">
+                        <CardContent className="p-4 flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={atleta.foto_url || ""} />
+                            <AvatarFallback>{atleta.nome.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <p className="font-semibold">{atleta.nome}</p>
+                            <div className="flex gap-2 mt-1">
+                              {atleta.numero_uniforme && (
+                                <Badge variant="secondary" className="text-xs">
+                                  #{atleta.numero_uniforme}
+                                </Badge>
+                              )}
+                              {atleta.posicao && (
+                                <Badge variant="outline" className="text-xs">
+                                  {atleta.posicao}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="convites">
+          <GerenciarConvites equipeId={id!} categoria={equipe.categoria} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

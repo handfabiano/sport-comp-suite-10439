@@ -168,6 +168,106 @@ export type Database = {
           },
         ]
       }
+      comentarios_partidas: {
+        Row: {
+          comentario: string
+          created_at: string
+          id: string
+          partida_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comentario: string
+          created_at?: string
+          id?: string
+          partida_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comentario?: string
+          created_at?: string
+          id?: string
+          partida_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comentarios_partidas_partida_id_fkey"
+            columns: ["partida_id"]
+            isOneToOne: false
+            referencedRelation: "partidas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      convites_equipe: {
+        Row: {
+          atleta_id: string | null
+          created_at: string
+          email_atleta: string | null
+          enviado_por: string
+          equipe_id: string
+          id: string
+          mensagem: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          atleta_id?: string | null
+          created_at?: string
+          email_atleta?: string | null
+          enviado_por: string
+          equipe_id: string
+          id?: string
+          mensagem?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          atleta_id?: string | null
+          created_at?: string
+          email_atleta?: string | null
+          enviado_por?: string
+          equipe_id?: string
+          id?: string
+          mensagem?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "convites_equipe_atleta_id_fkey"
+            columns: ["atleta_id"]
+            isOneToOne: false
+            referencedRelation: "atletas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "convites_equipe_atleta_id_fkey"
+            columns: ["atleta_id"]
+            isOneToOne: false
+            referencedRelation: "atletas_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "convites_equipe_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "convites_equipe_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipes: {
         Row: {
           ano_fundacao: number | null

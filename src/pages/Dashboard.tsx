@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users, Users2, Trophy } from "lucide-react";
 import PlacarTempoReal from "@/components/PlacarTempoReal";
+import ConvitesAtleta from "@/components/ConvitesAtleta";
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -132,6 +133,8 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <ConvitesAtleta />
     </div>
   );
 }

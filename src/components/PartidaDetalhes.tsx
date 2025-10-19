@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Calendar, MapPin, Trophy, Clock, User, Plus, Minus } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import ChatPartida from "@/components/ChatPartida";
 
 interface PartidaDetalhesProps {
   partidaId: string | null;
@@ -134,10 +135,11 @@ export default function PartidaDetalhes({ partidaId, open, onClose }: PartidaDet
           </div>
         ) : (
           <Tabs defaultValue="placar" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="placar">Placar</TabsTrigger>
               <TabsTrigger value="info">Informações</TabsTrigger>
               <TabsTrigger value="estatisticas">Estatísticas</TabsTrigger>
+              <TabsTrigger value="chat">Chat</TabsTrigger>
             </TabsList>
 
             <TabsContent value="placar" className="space-y-6">
@@ -295,6 +297,10 @@ export default function PartidaDetalhes({ partidaId, open, onClose }: PartidaDet
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="chat">
+              <ChatPartida partidaId={partidaId!} />
             </TabsContent>
           </Tabs>
         )}
