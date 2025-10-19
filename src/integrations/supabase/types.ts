@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      athlete_invite_tokens: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          email: string
+          equipe_id: string
+          expires_at: string
+          id: string
+          token: string
+          used: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          email: string
+          equipe_id: string
+          expires_at: string
+          id?: string
+          token: string
+          used?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          email?: string
+          equipe_id?: string
+          expires_at?: string
+          id?: string
+          token?: string
+          used?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_invite_tokens_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_invite_tokens_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       atletas: {
         Row: {
           alergias: string | null
@@ -290,6 +338,7 @@ export type Database = {
           patrocinadores: string[] | null
           permite_inscricao_aberta: boolean | null
           redes_sociais: Json | null
+          responsavel_id: string | null
           tecnico: string | null
           uniforme_alternativo: Json | null
           uniforme_cor: string | null
@@ -317,6 +366,7 @@ export type Database = {
           patrocinadores?: string[] | null
           permite_inscricao_aberta?: boolean | null
           redes_sociais?: Json | null
+          responsavel_id?: string | null
           tecnico?: string | null
           uniforme_alternativo?: Json | null
           uniforme_cor?: string | null
@@ -344,6 +394,7 @@ export type Database = {
           patrocinadores?: string[] | null
           permite_inscricao_aberta?: boolean | null
           redes_sociais?: Json | null
+          responsavel_id?: string | null
           tecnico?: string | null
           uniforme_alternativo?: Json | null
           uniforme_cor?: string | null
@@ -831,6 +882,45 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          equipe_id: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          equipe_id?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          equipe_id?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       atletas_public: {
@@ -963,6 +1053,10 @@ export type Database = {
       }
     }
     Functions: {
+      event_has_started: {
+        Args: { _evento_id: string }
+        Returns: boolean
+      }
       gerar_partidas_evento: {
         Args: { p_categoria: string; p_evento_id: string }
         Returns: {
@@ -972,8 +1066,20 @@ export type Database = {
           rodada: number
         }[]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_team_manager: {
+        Args: { _equipe_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "organizador" | "responsavel" | "atleta"
       event_status:
         | "inscricoes_abertas"
         | "em_andamento"
@@ -1118,6 +1224,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "organizador", "responsavel", "atleta"],
       event_status: [
         "inscricoes_abertas",
         "em_andamento",
