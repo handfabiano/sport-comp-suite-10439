@@ -327,7 +327,7 @@ export type Database = {
           created_at: string
           estadio_casa: string | null
           estatisticas: Json | null
-          evento_id: string
+          evento_id: string | null
           id: string
           limite_atletas: number | null
           logo_url: string | null
@@ -355,7 +355,7 @@ export type Database = {
           created_at?: string
           estadio_casa?: string | null
           estatisticas?: Json | null
-          evento_id: string
+          evento_id?: string | null
           id?: string
           limite_atletas?: number | null
           logo_url?: string | null
@@ -383,7 +383,7 @@ export type Database = {
           created_at?: string
           estadio_casa?: string | null
           estatisticas?: Json | null
-          evento_id?: string
+          evento_id?: string | null
           id?: string
           limite_atletas?: number | null
           logo_url?: string | null

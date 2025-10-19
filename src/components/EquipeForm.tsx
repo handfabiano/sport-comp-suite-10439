@@ -33,10 +33,10 @@ export default function EquipeForm({ equipe, onSuccess, trigger }: EquipeFormPro
   
   // Dados básicos
   const [nome, setNome] = useState(equipe?.nome || "");
-  const [eventoId, setEventoId] = useState(equipe?.evento_id || "");
   const [tecnico, setTecnico] = useState(equipe?.tecnico || "");
   const [modalidade, setModalidade] = useState(equipe?.modalidade || "futebol");
   const [categoria, setCategoria] = useState(equipe?.categoria || "");
+  const [sexo, setSexo] = useState(equipe?.sexo || "masculino");
   const [cidade, setCidade] = useState(equipe?.cidade || "");
   const [estadioCasa, setEstadioCasa] = useState(equipe?.estadio_casa || "");
   const [anoFundacao, setAnoFundacao] = useState(equipe?.ano_fundacao || "");
@@ -80,31 +80,20 @@ export default function EquipeForm({ equipe, onSuccess, trigger }: EquipeFormPro
   // Outros
   const [observacoes, setObservacoes] = useState(equipe?.observacoes || "");
 
-  useEffect(() => {
-    fetchEventos();
-  }, []);
-
-  const fetchEventos = async () => {
-    const { data } = await supabase
-      .from("eventos")
-      .select("id, nome, categorias")
-      .eq("status", "inscricoes_abertas")
-      .order("data_inicio", { ascending: false });
-    
-    if (data) setEventos(data);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      const { data: userData } = await supabase.auth.getUser();
+      
       const equipeData: any = {
         nome,
-        evento_id: eventoId,
         tecnico,
         modalidade,
         categoria,
+        sexo,
         cidade,
         estadio_casa: estadioCasa,
         ano_fundacao: anoFundacao ? parseInt(anoFundacao) : null,
@@ -120,6 +109,11 @@ export default function EquipeForm({ equipe, onSuccess, trigger }: EquipeFormPro
         redes_sociais: redesSociais,
         observacoes,
       };
+
+      // Adicionar responsavel_id apenas na criação
+      if (!equipe && userData.user) {
+        equipeData.responsavel_id = userData.user.id;
+      }
 
       if (equipe) {
         const { error } = await supabase
@@ -207,30 +201,28 @@ export default function EquipeForm({ equipe, onSuccess, trigger }: EquipeFormPro
                 </div>
 
                 <div>
-                  <Label htmlFor="evento">Evento *</Label>
-                  <Select value={eventoId} onValueChange={setEventoId} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o evento" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background z-50">
-                      {eventos.map((evt) => (
-                        <SelectItem key={evt.id} value={evt.id}>
-                          {evt.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
                   <Label htmlFor="categoria">Categoria *</Label>
                   <Input
                     id="categoria"
                     value={categoria}
                     onChange={(e) => setCategoria(e.target.value)}
                     required
-                    placeholder="Ex: Sub-17, Profissional"
+                    placeholder="Ex: Sub-17, Adulto, Sub-15"
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="sexo">Naipe *</Label>
+                  <Select value={sexo} onValueChange={setSexo} required>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background z-50">
+                      <SelectItem value="masculino">Masculino</SelectItem>
+                      <SelectItem value="feminino">Feminino</SelectItem>
+                      <SelectItem value="misto">Misto</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>

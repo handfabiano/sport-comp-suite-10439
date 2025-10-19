@@ -28,13 +28,7 @@ interface Equipe {
   uniforme_principal: any;
   uniforme_alternativo: any;
   estatisticas: any;
-  evento_id: string;
-  eventos: {
-    nome: string;
-    banner_url: string | null;
-    data_inicio: string;
-    data_fim: string;
-  } | null;
+  evento_id: string | null;
 }
 
 interface Atleta {
@@ -52,13 +46,13 @@ const EquipeDetalhes = () => {
   const [atletas, setAtletas] = useState<Atleta[]>([]);
   const [loading, setLoading] = useState(true);
   const [isManager, setIsManager] = useState(false);
-  const [isOrganizer, setIsOrganizer] = useState(false);
-  const [eventStarted, setEventStarted] = useState(false);
+  const [inscricoes, setInscricoes] = useState<any[]>([]);
 
   useEffect(() => {
     fetchEquipe();
     fetchAtletas();
     checkUserRole();
+    fetchInscricoes();
   }, [id]);
 
   const checkUserRole = async () => {
@@ -73,30 +67,9 @@ const EquipeDetalhes = () => {
         .eq("user_id", user.id)
         .eq("equipe_id", id)
         .eq("role", "responsavel")
-        .single();
+        .maybeSingle();
 
       setIsManager(!!managerRole);
-
-      // Verificar se é organizador
-      if (equipe) {
-        const { data: evento } = await supabase
-          .from("eventos")
-          .select("organizador_id, data_inicio, status")
-          .eq("id", equipe.evento_id)
-          .single();
-
-        if (evento) {
-          setIsOrganizer(evento.organizador_id === user.id);
-          
-          // Verificar se o evento já começou
-          const dataInicio = new Date(evento.data_inicio);
-          const hoje = new Date();
-          setEventStarted(
-            dataInicio <= hoje && 
-            (evento.status === 'em_andamento' || evento.status === 'finalizado')
-          );
-        }
-      }
     } catch (error) {
       console.error("Erro ao verificar role:", error);
     }
@@ -106,15 +79,7 @@ const EquipeDetalhes = () => {
     try {
       const { data, error } = await supabase
         .from("equipes")
-        .select(`
-          *,
-          eventos:evento_id (
-            nome,
-            banner_url,
-            data_inicio,
-            data_fim
-          )
-        `)
+        .select("*")
         .eq("id", id)
         .single();
 
@@ -124,6 +89,30 @@ const EquipeDetalhes = () => {
       console.error("Erro ao buscar equipe:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchInscricoes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("inscricoes")
+        .select(`
+          *,
+          eventos (
+            nome,
+            banner_url,
+            data_inicio,
+            data_fim,
+            status
+          )
+        `)
+        .eq("equipe_id", id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setInscricoes(data || []);
+    } catch (error) {
+      console.error("Erro ao buscar inscrições:", error);
     }
   };
 
@@ -173,28 +162,16 @@ const EquipeDetalhes = () => {
           </Button>
         </Link>
         
-        {(isOrganizer || isManager) && (
+        {isManager && (
           <div className="flex gap-2">
-            {isManager && (
-              <>
-                <AthleteInvitation equipeId={id!} equipeNome={equipe.nome} />
-                {eventStarted && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    <Shield className="h-3 w-3" />
-                    Evento iniciado - Sem alterações de elenco
-                  </Badge>
-                )}
-              </>
-            )}
-            {isOrganizer && (
-              <AssignTeamManager 
-                equipeId={id!} 
-                onSuccess={() => {
-                  fetchEquipe();
-                  checkUserRole();
-                }} 
-              />
-            )}
+            <AthleteInvitation equipeId={id!} equipeNome={equipe.nome} />
+            <AssignTeamManager 
+              equipeId={id!} 
+              onSuccess={() => {
+                fetchEquipe();
+                checkUserRole();
+              }} 
+            />
           </div>
         )}
       </div>
@@ -219,29 +196,34 @@ const EquipeDetalhes = () => {
         </Card>
 
         <div className="md:col-span-2 space-y-6">
-          {equipe.eventos && (
+          {inscricoes.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Trophy className="h-5 w-5" />
-                  Evento
+                  Eventos Inscritos ({inscricoes.length})
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <Link to={`/eventos/${equipe.eventos.nome}`}>
-                  <div className="flex items-center gap-4 hover:bg-accent p-4 rounded-lg transition-colors">
-                    <Avatar className="h-16 w-16">
-                      <AvatarImage src={equipe.eventos.banner_url || ""} />
-                      <AvatarFallback>{equipe.eventos.nome[0]}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="font-semibold text-lg">{equipe.eventos.nome}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(equipe.eventos.data_inicio).toLocaleDateString("pt-BR")} - {new Date(equipe.eventos.data_fim).toLocaleDateString("pt-BR")}
-                      </p>
+              <CardContent className="space-y-3">
+                {inscricoes.map((inscricao: any) => (
+                  <Link key={inscricao.id} to={`/eventos/${inscricao.evento_id}`}>
+                    <div className="flex items-center gap-4 hover:bg-accent p-4 rounded-lg transition-colors border">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={inscricao.eventos?.banner_url || ""} />
+                        <AvatarFallback>{inscricao.eventos?.nome[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{inscricao.eventos?.nome}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(inscricao.eventos?.data_inicio).toLocaleDateString("pt-BR")} - {new Date(inscricao.eventos?.data_fim).toLocaleDateString("pt-BR")}
+                        </p>
+                      </div>
+                      <Badge variant={inscricao.status === 'aprovada' ? 'default' : 'secondary'}>
+                        {inscricao.status === 'aprovada' ? 'Aprovada' : inscricao.status === 'pendente' ? 'Pendente' : 'Rejeitada'}
+                      </Badge>
                     </div>
-                  </div>
-                </Link>
+                  </Link>
+                ))}
               </CardContent>
             </Card>
           )}

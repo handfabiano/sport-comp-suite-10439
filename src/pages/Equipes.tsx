@@ -54,10 +54,8 @@ export default function Equipes() {
     setLoading(true);
     const { data, error } = await supabase
       .from("equipes")
-      .select(`
-        *,
-        eventos (nome)
-      `)
+      .select("*")
+      .eq("ativa", true)
       .order("nome");
 
     if (!error && data) {
@@ -158,14 +156,10 @@ export default function Equipes() {
                   </div>
                 </div>
                 <CardDescription>
-                  {equipe.eventos?.nome}
+                  {equipe.categoria}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Trophy className="h-4 w-4 flex-shrink-0" />
-                  <span>Categoria: {equipe.categoria}</span>
-                </div>
 
                 {equipe.tecnico && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">

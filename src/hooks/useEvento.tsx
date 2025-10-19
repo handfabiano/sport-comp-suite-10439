@@ -154,6 +154,29 @@ export function useEvento(eventoId?: string) {
     }
   };
 
+  const getEquipesInscritas = async (eventoId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("inscricoes")
+        .select(`
+          *,
+          equipes (*)
+        `)
+        .eq("evento_id", eventoId)
+        .eq("status", "aprovada");
+
+      if (error) throw error;
+      return data || [];
+    } catch (error: any) {
+      toast({
+        title: "Erro ao buscar equipes inscritas",
+        description: error.message,
+        variant: "destructive",
+      });
+      return [];
+    }
+  };
+
   return {
     evento,
     eventos,
@@ -163,5 +186,6 @@ export function useEvento(eventoId?: string) {
     createEvento,
     updateEvento,
     deleteEvento,
+    getEquipesInscritas,
   };
 }
