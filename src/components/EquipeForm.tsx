@@ -24,6 +24,13 @@ export default function EquipeForm({ equipe, onSuccess, trigger }: EquipeFormPro
   const [loading, setLoading] = useState(false);
   const [eventos, setEventos] = useState<any[]>([]);
   
+  // Abrir dialog quando equipe é passada para edição
+  useEffect(() => {
+    if (equipe && trigger) {
+      setOpen(true);
+    }
+  }, [equipe, trigger]);
+  
   // Dados básicos
   const [nome, setNome] = useState(equipe?.nome || "");
   const [eventoId, setEventoId] = useState(equipe?.evento_id || "");

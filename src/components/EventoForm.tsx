@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,13 @@ interface EventoFormProps {
 export default function EventoForm({ evento, onSuccess, trigger }: EventoFormProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  // Abrir dialog quando evento é passado para edição
+  useEffect(() => {
+    if (evento && trigger) {
+      setOpen(true);
+    }
+  }, [evento, trigger]);
   
   // Dados básicos
   const [nome, setNome] = useState(evento?.nome || "");

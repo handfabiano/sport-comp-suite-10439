@@ -24,6 +24,13 @@ export default function AtletaForm({ atleta, onSuccess, trigger }: AtletaFormPro
   const [loading, setLoading] = useState(false);
   const [equipes, setEquipes] = useState<any[]>([]);
   
+  // Abrir dialog quando atleta é passado para edição
+  useEffect(() => {
+    if (atleta && trigger) {
+      setOpen(true);
+    }
+  }, [atleta, trigger]);
+  
   // Dados pessoais
   const [nome, setNome] = useState(atleta?.nome || "");
   const [documento, setDocumento] = useState(atleta?.documento || "");

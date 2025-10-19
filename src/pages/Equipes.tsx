@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Users2, Users, MapPin, Trophy, Shirt, Phone, Edit, Trash2 } from "lucide-react";
+import { Users2, Users, MapPin, Trophy, Shirt, Phone, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import EquipeForm from "@/components/EquipeForm";
+import FilterBar from "@/components/shared/FilterBar";
 
 interface Equipe {
   id: string;
@@ -26,13 +27,28 @@ interface Equipe {
 
 export default function Equipes() {
   const [equipes, setEquipes] = useState<Equipe[]>([]);
+  const [filteredEquipes, setFilteredEquipes] = useState<Equipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editingEquipe, setEditingEquipe] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   useEffect(() => {
     fetchEquipes();
   }, []);
+
+  useEffect(() => {
+    const filtered = equipes.filter(equipe => 
+      equipe.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      equipe.categoria.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      equipe.tecnico?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      equipe.cidade?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredEquipes(filtered);
+    setCurrentPage(1);
+  }, [searchTerm, equipes]);
 
   const fetchEquipes = async () => {
     setLoading(true);
@@ -46,9 +62,14 @@ export default function Equipes() {
 
     if (!error && data) {
       setEquipes(data);
+      setFilteredEquipes(data);
     }
     setLoading(false);
   };
+
+  const totalPages = Math.ceil(filteredEquipes.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedEquipes = filteredEquipes.slice(startIndex, startIndex + itemsPerPage);
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -71,11 +92,17 @@ export default function Equipes() {
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Equipes</h1>
           <p className="text-muted-foreground">
-            Gerencie as equipes com configurações completas e personalizadas
+            Gerencie as equipes com configurações completas e personalizadas • {filteredEquipes.length} encontrada(s)
           </p>
         </div>
         <EquipeForm onSuccess={fetchEquipes} />
       </div>
+
+      <FilterBar
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Buscar equipes por nome, técnico, categoria ou cidade..."
+      />
 
       {loading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -103,8 +130,9 @@ export default function Equipes() {
           </CardContent>
         </Card>
       ) : (
+        <>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {equipes.map((equipe) => (
+          {paginatedEquipes.map((equipe) => (
             <Card key={equipe.id} className="overflow-hidden transition-all hover:shadow-lg group">
               <Link to={`/equipes/${equipe.id}`}>
               <div 
@@ -218,6 +246,33 @@ export default function Equipes() {
             </Card>
           ))}
         </div>
+        
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Anterior
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              Página {currentPage} de {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Próxima
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+        </>
       )}
 
       {editingEquipe && (

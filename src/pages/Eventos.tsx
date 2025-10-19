@@ -4,11 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Calendar, MapPin, Users, Trophy, DollarSign, Edit, Trash2 } from "lucide-react";
+import { Calendar, MapPin, Users, Trophy, DollarSign, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import EventoForm from "@/components/EventoForm";
+import FilterBar from "@/components/shared/FilterBar";
 
 interface Evento {
   id: string;
@@ -42,13 +43,28 @@ const statusLabels = {
 
 export default function Eventos() {
   const [eventos, setEventos] = useState<Evento[]>([]);
+  const [filteredEventos, setFilteredEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editingEvento, setEditingEvento] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   useEffect(() => {
     fetchEventos();
   }, []);
+
+  useEffect(() => {
+    const filtered = eventos.filter(evento => 
+      evento.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      evento.local.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      evento.modalidade.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      evento.categorias.some(cat => cat.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+    setFilteredEventos(filtered);
+    setCurrentPage(1);
+  }, [searchTerm, eventos]);
 
   const fetchEventos = async () => {
     setLoading(true);
@@ -59,9 +75,14 @@ export default function Eventos() {
 
     if (!error && data) {
       setEventos(data);
+      setFilteredEventos(data);
     }
     setLoading(false);
   };
+
+  const totalPages = Math.ceil(filteredEventos.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedEventos = filteredEventos.slice(startIndex, startIndex + itemsPerPage);
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -84,11 +105,17 @@ export default function Eventos() {
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Eventos</h1>
           <p className="text-muted-foreground">
-            Gerencie seus eventos esportivos com configurações personalizadas
+            Gerencie seus eventos esportivos com configurações personalizadas • {filteredEventos.length} encontrado(s)
           </p>
         </div>
         <EventoForm onSuccess={fetchEventos} />
       </div>
+
+      <FilterBar
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Buscar eventos por nome, local, modalidade ou categoria..."
+      />
 
       {loading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -119,8 +146,9 @@ export default function Eventos() {
           </CardContent>
         </Card>
       ) : (
+        <>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {eventos.map((evento) => (
+          {paginatedEventos.map((evento) => (
             <Card
               key={evento.id}
               className="overflow-hidden transition-all hover:shadow-lg group"
@@ -220,6 +248,33 @@ export default function Eventos() {
             </Card>
           ))}
         </div>
+        
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Anterior
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              Página {currentPage} de {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Próxima
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+        </>
       )}
 
       {editingEvento && (
