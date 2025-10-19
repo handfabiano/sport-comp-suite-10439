@@ -16,6 +16,7 @@ import EquipeDetalhes from "./pages/EquipeDetalhes";
 import Partidas from "./pages/Partidas";
 import Rankings from "./pages/Rankings";
 import NotFound from "./pages/NotFound";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,30 +30,32 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route element={<Layout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/eventos" element={<Eventos />} />
-            <Route path="/eventos/:id" element={<EventoDetalhes />} />
-            <Route path="/atletas" element={<Atletas />} />
-            <Route path="/atletas/:id" element={<AtletaDetalhes />} />
-            <Route path="/equipes" element={<Equipes />} />
-            <Route path="/equipes/:id" element={<EquipeDetalhes />} />
-            <Route path="/partidas" element={<Partidas />} />
-            <Route path="/rankings" element={<Rankings />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route element={<Layout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/eventos" element={<Eventos />} />
+              <Route path="/eventos/:id" element={<EventoDetalhes />} />
+              <Route path="/atletas" element={<Atletas />} />
+              <Route path="/atletas/:id" element={<AtletaDetalhes />} />
+              <Route path="/equipes" element={<Equipes />} />
+              <Route path="/equipes/:id" element={<EquipeDetalhes />} />
+              <Route path="/partidas" element={<Partidas />} />
+              <Route path="/rankings" element={<Rankings />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
