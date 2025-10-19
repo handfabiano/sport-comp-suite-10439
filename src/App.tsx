@@ -19,6 +19,8 @@ import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 import CadastroAtleta from "./pages/CadastroAtleta";
 import CadastroSucesso from "./pages/CadastroSucesso";
+import Responsaveis from "./pages/Responsaveis";
+import MinhasEquipes from "./pages/MinhasEquipes";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,6 +53,8 @@ const App = () => (
               <Route path="/atletas/:id" element={<AtletaDetalhes />} />
               <Route path="/equipes" element={<Equipes />} />
               <Route path="/equipes/:id" element={<EquipeDetalhes />} />
+              <Route path="/responsaveis" element={<Responsaveis />} />
+              <Route path="/minhas-equipes" element={<MinhasEquipes />} />
               <Route path="/partidas" element={<Partidas />} />
               <Route path="/rankings" element={<Rankings />} />
             </Route>

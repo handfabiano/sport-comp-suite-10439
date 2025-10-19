@@ -28,8 +28,10 @@ const menuItems = [
   { title: "Eventos", url: "/eventos", icon: Calendar },
   { title: "Atletas", url: "/atletas", icon: Users },
   { title: "Equipes", url: "/equipes", icon: Users2 },
+  { title: "Minhas Equipes", url: "/minhas-equipes", icon: Users2 },
   { title: "Partidas", url: "/partidas", icon: Trophy },
   { title: "Rankings", url: "/rankings", icon: Medal },
+  { title: "Responsáveis", url: "/responsaveis", icon: Users },
 ];
 
 export function Sidebar() {

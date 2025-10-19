@@ -882,6 +882,45 @@ export type Database = {
           },
         ]
       }
+      responsaveis: {
+        Row: {
+          ativo: boolean | null
+          created_at: string
+          documento: string | null
+          email: string
+          foto_url: string | null
+          id: string
+          nome: string
+          telefone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string
+          documento?: string | null
+          email: string
+          foto_url?: string | null
+          id?: string
+          nome: string
+          telefone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string
+          documento?: string | null
+          email?: string
+          foto_url?: string | null
+          id?: string
+          nome?: string
+          telefone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -1064,6 +1103,12 @@ export type Database = {
           equipe_b_id: string
           fase: string
           rodada: number
+        }[]
+      }
+      get_responsavel_equipes: {
+        Args: { _user_id: string }
+        Returns: {
+          equipe_id: string
         }[]
       }
       has_role: {
