@@ -37,7 +37,6 @@ interface Partida {
   placar_b: number;
   finalizada: boolean;
   categoria: string;
-  modalidade: string;
   transmissao_url?: string;
   destaque?: boolean;
   equipe_a: { nome: string; logo_url: string | null };
@@ -53,8 +52,6 @@ interface Ranking {
   gols_pro: number;
   gols_contra: number;
   categoria: string;
-  modalidade: string;
-  jogos: number;
   equipes: { nome: string; logo_url: string | null } | null;
 }
 
@@ -222,7 +219,7 @@ const PartidaCard = ({
     minute: "2-digit",
   });
 
-  const sport = SPORTS_CONFIG.find(s => s.id === partida.modalidade) || SPORTS_CONFIG[0];
+  const sport = SPORTS_CONFIG[0];
 
   return (
     <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group relative">
@@ -239,12 +236,9 @@ const PartidaCard = ({
             <Calendar className="h-4 w-4" />
             {dataFormatada}
           </span>
-          <div className="flex gap-2">
-            <SportBadge modalidade={partida.modalidade} size="sm" />
-            <Badge variant="outline" className="font-medium">
-              {partida.fase}
-            </Badge>
-          </div>
+          <Badge variant="outline" className="font-medium">
+            {partida.fase}
+          </Badge>
         </div>
         
         <div className="flex items-center justify-between py-4">
@@ -253,7 +247,7 @@ const PartidaCard = ({
               {partida.equipe_a.logo_url ? (
                 <img src={partida.equipe_a.logo_url} alt="" className="w-8 h-8" />
               ) : (
-                <SportIcon modalidade={partida.modalidade} className="w-6 h-6 text-muted-foreground" />
+                <Trophy className="w-6 h-6 text-muted-foreground" />
               )}
             </div>
             <p className="font-bold text-sm">{partida.equipe_a.nome}</p>
@@ -281,7 +275,7 @@ const PartidaCard = ({
               {partida.equipe_b.logo_url ? (
                 <img src={partida.equipe_b.logo_url} alt="" className="w-8 h-8" />
               ) : (
-                <SportIcon modalidade={partida.modalidade} className="w-6 h-6 text-muted-foreground" />
+                <Trophy className="w-6 h-6 text-muted-foreground" />
               )}
             </div>
             <p className="font-bold text-sm">{partida.equipe_b.nome}</p>
@@ -481,69 +475,60 @@ const Index = () => {
   };
 
   const fetchProximasPartidas = async () => {
-    let query = supabase
+    const { data, error } = await supabase
       .from("partidas")
-      .select(`*, equipe_a:equipe_a_id(nome, logo_url), equipe_b:equipe_b_id(nome, logo_url)`)
+      .select(`
+        *,
+        equipe_a:equipes!partidas_equipe_a_id_fkey(nome, logo_url),
+        equipe_b:equipes!partidas_equipe_b_id_fkey(nome, logo_url)
+      `)
       .eq("finalizada", false)
       .order("data_partida", { ascending: true })
       .limit(6);
 
-    if (selectedSport !== "todos") {
-      query = query.eq("modalidade", selectedSport);
-    }
-
-    const { data, error } = await query;
     if (error) throw error;
     if (data) setProximasPartidas(data as any);
   };
 
   const fetchUltimosResultados = async () => {
-    let query = supabase
+    const { data, error } = await supabase
       .from("partidas")
-      .select(`*, equipe_a:equipe_a_id(nome, logo_url), equipe_b:equipe_b_id(nome, logo_url)`)
+      .select(`
+        *,
+        equipe_a:equipes!partidas_equipe_a_id_fkey(nome, logo_url),
+        equipe_b:equipes!partidas_equipe_b_id_fkey(nome, logo_url)
+      `)
       .eq("finalizada", true)
       .order("data_partida", { ascending: false })
       .limit(6);
 
-    if (selectedSport !== "todos") {
-      query = query.eq("modalidade", selectedSport);
-    }
-
-    const { data, error } = await query;
     if (error) throw error;
     if (data) setUltimosResultados(data as any);
   };
 
   const fetchRankings = async () => {
-    let query = supabase
+    const { data, error } = await supabase
       .from("rankings")
-      .select(`*, equipes:equipe_id(nome, logo_url)`)
+      .select(`*, equipes:equipes!rankings_equipe_id_fkey(nome, logo_url)`)
       .order("pontos", { ascending: false })
       .limit(10);
 
-    if (selectedSport !== "todos") {
-      query = query.eq("modalidade", selectedSport);
-    }
-
-    const { data, error } = await query;
     if (error) throw error;
     if (data) setRankings(data as any);
   };
 
   const fetchPartidasDestaque = async () => {
-    let query = supabase
+    const { data, error } = await supabase
       .from("partidas")
-      .select(`*, equipe_a:equipe_a_id(nome, logo_url), equipe_b:equipe_b_id(nome, logo_url)`)
-      .eq("destaque", true)
+      .select(`
+        *,
+        equipe_a:equipes!partidas_equipe_a_id_fkey(nome, logo_url),
+        equipe_b:equipes!partidas_equipe_b_id_fkey(nome, logo_url)
+      `)
       .eq("finalizada", false)
       .order("data_partida", { ascending: true })
       .limit(3);
 
-    if (selectedSport !== "todos") {
-      query = query.eq("modalidade", selectedSport);
-    }
-
-    const { data, error } = await query;
     if (error) throw error;
     if (data) setPartidasDestaque(data as any);
   };
@@ -1144,7 +1129,7 @@ const Index = () => {
                                     />
                                   ) : (
                                     <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                                      <SportIcon modalidade={rank.modalidade} className="w-5 h-5" />
+                                      <Trophy className="w-5 h-5" />
                                     </div>
                                   )}
                                   <span className="font-semibold">{rank.equipes?.nome}</span>
