@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { Layout } from "./components/Layout";
 import Auth from "./pages/Auth";
 import Index from "./pages/Index";
@@ -37,36 +38,38 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/cadastro-atleta" element={<CadastroAtleta />} />
-            <Route path="/cadastro-responsavel" element={<CadastroResponsavel />} />
-            <Route path="/cadastro-sucesso" element={<CadastroSucesso />} />
-            <Route element={<Layout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/eventos" element={<Eventos />} />
-              <Route path="/eventos/:id" element={<EventoDetalhes />} />
-              <Route path="/atletas" element={<Atletas />} />
-              <Route path="/atletas/:id" element={<AtletaDetalhes />} />
-              <Route path="/equipes" element={<Equipes />} />
-              <Route path="/equipes/:id" element={<EquipeDetalhes />} />
-              <Route path="/responsaveis" element={<Responsaveis />} />
-              <Route path="/minhas-equipes" element={<MinhasEquipes />} />
-              <Route path="/partidas" element={<Partidas />} />
-              <Route path="/rankings" element={<Rankings />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/cadastro-atleta" element={<CadastroAtleta />} />
+              <Route path="/cadastro-responsavel" element={<CadastroResponsavel />} />
+              <Route path="/cadastro-sucesso" element={<CadastroSucesso />} />
+              <Route element={<Layout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/eventos" element={<Eventos />} />
+                <Route path="/eventos/:id" element={<EventoDetalhes />} />
+                <Route path="/atletas" element={<Atletas />} />
+                <Route path="/atletas/:id" element={<AtletaDetalhes />} />
+                <Route path="/equipes" element={<Equipes />} />
+                <Route path="/equipes/:id" element={<EquipeDetalhes />} />
+                <Route path="/responsaveis" element={<Responsaveis />} />
+                <Route path="/minhas-equipes" element={<MinhasEquipes />} />
+                <Route path="/partidas" element={<Partidas />} />
+                <Route path="/rankings" element={<Rankings />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   </ErrorBoundary>
 );
 
