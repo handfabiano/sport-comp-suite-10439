@@ -8,7 +8,8 @@ import { Badge } from “@/components/ui/badge”;
 import {
 Calendar, Trophy, TrendingUp, Users, Newspaper, ArrowRight,
 Menu, X, Search, Bell, Play, Share2, Bookmark, Filter,
-MapPin, Clock, Star, ChevronRight, Activity, Target
+MapPin, Clock, Star, ChevronRight, Activity, Target,
+Dumbbell, Volleyball, Waves, TableTennis
 } from “lucide-react”;
 import { OptimizedImage } from “@/components/OptimizedImage”;
 import { Input } from “@/components/ui/input”;
@@ -19,6 +20,7 @@ SelectItem,
 SelectTrigger,
 SelectValue,
 } from “@/components/ui/select”;
+import { Tabs, TabsList, TabsTrigger } from “@/components/ui/tabs”;
 import { toast } from “sonner”;
 import heroImage from “@/assets/hero-sports.jpg”;
 import sponsor1 from “@/assets/sponsor-1.png”;
@@ -35,6 +37,7 @@ placar_a: number;
 placar_b: number;
 finalizada: boolean;
 categoria: string;
+modalidade: string; // Novo: futebol, volei, basquete, etc.
 transmissao_url?: string;
 destaque?: boolean;
 equipe_a: { nome: string; logo_url: string | null };
@@ -50,6 +53,7 @@ derrotas: number;
 gols_pro: number;
 gols_contra: number;
 categoria: string;
+modalidade: string; // Novo
 jogos: number;
 equipes: { nome: string; logo_url: string | null } | null;
 }
@@ -61,6 +65,7 @@ resumo: string;
 data: string;
 imagem: string;
 categoria: string;
+modalidade?: string; // Novo
 autor?: string;
 visualizacoes?: number;
 }
@@ -70,9 +75,105 @@ label: string;
 valor: string | number;
 icone: any;
 tendencia?: “up” | “down”;
+modalidade?: string;
 }
 
+// ==================== CONFIGURAÇÃO DE ESPORTES ====================
+interface SportConfig {
+id: string;
+nome: string;
+icone: any;
+cor: string;
+corHex: string;
+descricao: string;
+}
+
+const SPORTS_CONFIG: SportConfig[] = [
+{
+id: “todos”,
+nome: “Todos os Esportes”,
+icone: Trophy,
+cor: “bg-gradient-to-r from-blue-500 to-purple-600”,
+corHex: “#3b82f6”,
+descricao: “Acompanhe todas as modalidades”
+},
+{
+id: “futebol”,
+nome: “Futebol”,
+icone: Target,
+cor: “bg-gradient-to-r from-green-500 to-emerald-600”,
+corHex: “#10b981”,
+descricao: “O esporte mais popular”
+},
+{
+id: “volei”,
+nome: “Vôlei”,
+icone: Volleyball,
+cor: “bg-gradient-to-r from-orange-500 to-red-600”,
+corHex: “#f97316”,
+descricao: “Quadra e areia”
+},
+{
+id: “basquete”,
+nome: “Basquete”,
+icone: Activity,
+cor: “bg-gradient-to-r from-yellow-500 to-orange-600”,
+corHex: “#eab308”,
+descricao: “Dinâmico e emocionante”
+},
+{
+id: “natacao”,
+nome: “Natação”,
+icone: Waves,
+cor: “bg-gradient-to-r from-cyan-500 to-blue-600”,
+corHex: “#06b6d4”,
+descricao: “Velocidade e técnica”
+},
+{
+id: “tenis”,
+nome: “Tênis”,
+icone: TableTennis,
+cor: “bg-gradient-to-r from-lime-500 to-green-600”,
+corHex: “#84cc16”,
+descricao: “Habilidade e estratégia”
+},
+{
+id: “atletismo”,
+nome: “Atletismo”,
+icone: Dumbbell,
+cor: “bg-gradient-to-r from-red-500 to-pink-600”,
+corHex: “#ef4444”,
+descricao: “Força e resistência”
+}
+];
+
 // ==================== COMPONENTES REUTILIZÁVEIS ====================
+
+// Sport Icon Component
+const SportIcon = ({ modalidade, className = “h-5 w-5” }: { modalidade: string; className?: string }) => {
+const sport = SPORTS_CONFIG.find(s => s.id === modalidade) || SPORTS_CONFIG[0];
+const IconComponent = sport.icone;
+return <IconComponent className={className} />;
+};
+
+// Sport Badge Component
+const SportBadge = ({ modalidade, size = “md” }: { modalidade: string; size?: “sm” | “md” | “lg” }) => {
+const sport = SPORTS_CONFIG.find(s => s.id === modalidade) || SPORTS_CONFIG[0];
+const IconComponent = sport.icone;
+
+const sizeClasses = {
+sm: “px-2 py-1 text-xs”,
+md: “px-3 py-1 text-sm”,
+lg: “px-4 py-2 text-base”
+};
+
+return (
+<Badge className={`${sport.cor} text-white border-0 ${sizeClasses[size]}`}>
+<IconComponent className="h-3 w-3 mr-1" />
+{sport.nome}
+</Badge>
+);
+};
 
 // Skeleton Loading Component
 const SkeletonCard = () => (
@@ -122,9 +223,11 @@ hour: “2-digit”,
 minute: “2-digit”,
 });
 
+const sport = SPORTS_CONFIG.find(s => s.id === partida.modalidade) || SPORTS_CONFIG[0];
+
 return (
 <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group relative">
-<div className={`h-2 ${showScore ? 'bg-gradient-secondary' : 'bg-gradient-primary'}`} />
+<div className={`h-2 ${sport.cor}`} />
 {partida.destaque && (
 <Badge className="absolute top-4 right-4 bg-yellow-500 text-white z-10">
 <Star className="h-3 w-3 mr-1" />
@@ -137,9 +240,12 @@ Destaque
 <Calendar className="h-4 w-4" />
 {dataFormatada}
 </span>
+<div className="flex gap-2">
+<SportBadge modalidade={partida.modalidade} size="sm" />
 <Badge variant="outline" className="font-medium">
 {partida.fase}
 </Badge>
+</div>
 </div>
 
 ```
@@ -149,12 +255,14 @@ Destaque
           {partida.equipe_a.logo_url ? (
             <img src={partida.equipe_a.logo_url} alt="" className="w-8 h-8" />
           ) : (
-            <Trophy className="w-6 h-6 text-muted-foreground" />
+            <SportIcon modalidade={partida.modalidade} className="w-6 h-6 text-muted-foreground" />
           )}
         </div>
         <p className="font-bold text-sm">{partida.equipe_a.nome}</p>
         {showScore && (
-          <p className="text-3xl font-bold text-primary">{partida.placar_a}</p>
+          <p className="text-3xl font-bold" style={{ color: sport.corHex }}>
+            {partida.placar_a}
+          </p>
         )}
       </div>
       
@@ -175,12 +283,14 @@ Destaque
           {partida.equipe_b.logo_url ? (
             <img src={partida.equipe_b.logo_url} alt="" className="w-8 h-8" />
           ) : (
-            <Trophy className="w-6 h-6 text-muted-foreground" />
+            <SportIcon modalidade={partida.modalidade} className="w-6 h-6 text-muted-foreground" />
           )}
         </div>
         <p className="font-bold text-sm">{partida.equipe_b.nome}</p>
         {showScore && (
-          <p className="text-3xl font-bold text-primary">{partida.placar_b}</p>
+          <p className="text-3xl font-bold" style={{ color: sport.corHex }}>
+            {partida.placar_b}
+          </p>
         )}
       </div>
     </div>
@@ -228,7 +338,12 @@ onBookmark
 }: {
 noticia: Noticia;
 onBookmark?: (id: number) => void;
-}) => (
+}) => {
+const sport = noticia.modalidade
+? SPORTS_CONFIG.find(s => s.id === noticia.modalidade)
+: null;
+
+return (
 <Card className="overflow-hidden hover:shadow-xl transition-all group cursor-pointer">
 <div className="relative h-56 overflow-hidden">
 <OptimizedImage
@@ -237,9 +352,12 @@ alt={noticia.titulo}
 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
 />
 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-<Badge className="absolute top-4 left-4 bg-secondary text-white">
+<div className="absolute top-4 left-4 flex gap-2">
+<Badge className="bg-secondary text-white">
 {noticia.categoria}
 </Badge>
+{sport && <SportBadge modalidade={sport.id} size="sm" />}
+</div>
 <Button
 variant=“ghost”
 size=“icon”
@@ -283,6 +401,7 @@ Ler matéria completa
 </CardContent>
 </Card>
 );
+};
 
 // ==================== COMPONENTE PRINCIPAL ====================
 
@@ -298,7 +417,7 @@ const [ultimosResultados, setUltimosResultados] = useState<Partida[]>([]);
 const [rankings, setRankings] = useState<Ranking[]>([]);
 const [partidasDestaque, setPartidasDestaque] = useState<Partida[]>([]);
 
-// Notícias mockadas com mais dados
+// Notícias mockadas com modalidades
 const noticias: Noticia[] = [
 {
 id: 1,
@@ -307,38 +426,44 @@ resumo: “Com gol nos acréscimos do segundo tempo, Palmeiras vence São Paulo 
 data: “2025-01-20”,
 imagem: heroImage,
 categoria: “Campeonato”,
+modalidade: “futebol”,
 autor: “Carlos Silva”,
 visualizacoes: 15420,
 },
 {
 id: 2,
-titulo: “Revelação de 16 anos faz hat-trick em partida histórica”,
-resumo: “Jovem atacante marca três gols em 15 minutos e entra para a história como o mais jovem a fazer hat-trick no torneio sub-17.”,
+titulo: “Seleção brasileira de vôlei conquista ouro no Pan-Americano”,
+resumo: “Após partida emocionante, Brasil vence Argentina por 3 sets a 1 e conquista medalha de ouro inédita na categoria sub-19.”,
 data: “2025-01-19”,
 imagem: heroImage,
-categoria: “Destaque”,
+categoria: “Internacional”,
+modalidade: “volei”,
 autor: “Ana Rodrigues”,
 visualizacoes: 23150,
 },
 {
 id: 3,
-titulo: “Semifinais definidas em noite de emoções e pênaltis”,
-resumo: “Últimas vagas para semifinal são decididas nos pênaltis após jogos equilibrados. Confrontos prometem grande espetáculo.”,
+titulo: “Nadador brasileiro bate recorde sul-americano nos 100m livre”,
+resumo: “Com tempo de 47.8 segundos, jovem de 17 anos estabelece nova marca continental e se classifica para o mundial.”,
 data: “2025-01-18”,
 imagem: heroImage,
-categoria: “Copa”,
+categoria: “Recordes”,
+modalidade: “natacao”,
 autor: “Pedro Santos”,
 visualizacoes: 18700,
 },
 ];
 
-// Estatísticas gerais
+// Estatísticas por esporte
 const estatisticas: Estatistica[] = [
-{ label: “Partidas Hoje”, valor: 8, icone: Calendar, tendencia: “up” },
-{ label: “Times Cadastrados”, valor: 64, icone: Users },
-{ label: “Gols na Rodada”, valor: 127, icone: Target, tendencia: “up” },
-{ label: “Espectadores”, valor: “12.5k”, icone: Activity },
+{ label: “Partidas Hoje”, valor: 24, icone: Calendar, tendencia: “up” },
+{ label: “Modalidades Ativas”, valor: 6, icone: Trophy },
+{ label: “Equipes Cadastradas”, valor: 186, icone: Users, tendencia: “up” },
+{ label: “Espectadores”, valor: “42.5k”, icone: Activity },
 ];
+
+// Sport atual selecionado
+const currentSport = SPORTS_CONFIG.find(s => s.id === selectedSport) || SPORTS_CONFIG[0];
 
 // ==================== FUNÇÕES DE FETCH ====================
 
@@ -357,10 +482,10 @@ toast.error(“Erro ao carregar dados. Tente novamente.”);
 } finally {
 setIsLoading(false);
 }
-}, []);
+}, [selectedSport]);
 
 const fetchProximasPartidas = async () => {
-const { data, error } = await supabase
+let query = supabase
 .from(“partidas”)
 .select(`*, equipe_a:equipe_a_id(nome, logo_url), equipe_b:equipe_b_id(nome, logo_url)`)
 .eq(“finalizada”, false)
@@ -368,6 +493,11 @@ const { data, error } = await supabase
 .limit(6);
 
 ```
+if (selectedSport !== "todos") {
+  query = query.eq("modalidade", selectedSport);
+}
+
+const { data, error } = await query;
 if (error) throw error;
 if (data) setProximasPartidas(data as any);
 ```
@@ -375,7 +505,7 @@ if (data) setProximasPartidas(data as any);
 };
 
 const fetchUltimosResultados = async () => {
-const { data, error } = await supabase
+let query = supabase
 .from(“partidas”)
 .select(`*, equipe_a:equipe_a_id(nome, logo_url), equipe_b:equipe_b_id(nome, logo_url)`)
 .eq(“finalizada”, true)
@@ -383,6 +513,11 @@ const { data, error } = await supabase
 .limit(6);
 
 ```
+if (selectedSport !== "todos") {
+  query = query.eq("modalidade", selectedSport);
+}
+
+const { data, error } = await query;
 if (error) throw error;
 if (data) setUltimosResultados(data as any);
 ```
@@ -390,13 +525,18 @@ if (data) setUltimosResultados(data as any);
 };
 
 const fetchRankings = async () => {
-const { data, error } = await supabase
+let query = supabase
 .from(“rankings”)
 .select(`*, equipes:equipe_id(nome, logo_url)`)
 .order(“pontos”, { ascending: false })
 .limit(10);
 
 ```
+if (selectedSport !== "todos") {
+  query = query.eq("modalidade", selectedSport);
+}
+
+const { data, error } = await query;
 if (error) throw error;
 if (data) setRankings(data as any);
 ```
@@ -404,7 +544,7 @@ if (data) setRankings(data as any);
 };
 
 const fetchPartidasDestaque = async () => {
-const { data, error } = await supabase
+let query = supabase
 .from(“partidas”)
 .select(`*, equipe_a:equipe_a_id(nome, logo_url), equipe_b:equipe_b_id(nome, logo_url)`)
 .eq(“destaque”, true)
@@ -413,6 +553,11 @@ const { data, error } = await supabase
 .limit(3);
 
 ```
+if (selectedSport !== "todos") {
+  query = query.eq("modalidade", selectedSport);
+}
+
+const { data, error } = await query;
 if (error) throw error;
 if (data) setPartidasDestaque(data as any);
 ```
@@ -448,11 +593,16 @@ const element = document.getElementById(id);
 element?.scrollIntoView({ behavior: ‘smooth’, block: ‘start’ });
 };
 
+const handleSportChange = (sportId: string) => {
+setSelectedSport(sportId);
+toast.success(`Exibindo ${SPORTS_CONFIG.find(s => s.id === sportId)?.nome || 'todos os esportes'}`);
+};
+
 // ==================== EFFECTS ====================
 
 useEffect(() => {
 fetchData();
-}, [fetchData]);
+}, [fetchData, selectedSport]);
 
 // ==================== FILTROS ====================
 
@@ -466,17 +616,22 @@ const cats = new Set(rankings.map(r => r.categoria));
 return [“todas”, …Array.from(cats)];
 }, [rankings]);
 
+const noticiasFiltradas = useMemo(() => {
+if (selectedSport === “todos”) return noticias;
+return noticias.filter(n => n.modalidade === selectedSport);
+}, [noticias, selectedSport]);
+
 // ==================== RENDER ====================
 
 return (
 <>
 <Helmet>
-<title>Sports Arena - Portal Completo de Esportes Juvenis</title>
+<title>Sports Arena - Portal Multi-Esportivo Completo</title>
 <meta 
 name="description" 
-content="Acompanhe em tempo real partidas, resultados, classificações e notícias dos melhores campeonatos esportivos juvenis do Brasil." 
+content="Acompanhe futebol, vôlei, basquete, natação e mais! Resultados, classificações e notícias em tempo real de todos os esportes." 
 />
-<meta name="keywords" content="esportes, futebol juvenil, campeonato, partidas ao vivo, classificação" />
+<meta name="keywords" content="esportes, multi-esportivo, futebol, volei, basquete, natação, atletismo, partidas ao vivo" />
 </Helmet>
 
 ```
@@ -485,10 +640,13 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <Trophy className="h-8 w-8 text-primary animate-pulse" />
-          <span className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
-            Sports Arena
-          </span>
+          <div className={`p-2 rounded-lg ${currentSport.cor}`}>
+            <Trophy className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <span className="text-xl font-bold block">Sports Arena</span>
+            <span className="text-xs text-muted-foreground">{currentSport.descricao}</span>
+          </div>
         </div>
         
         {/* Desktop Navigation */}
@@ -518,10 +676,10 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
             Notícias
           </button>
           <button 
-            onClick={() => scrollToSection('estatisticas')}
+            onClick={() => scrollToSection('modalidades')}
             className="text-sm font-medium hover:text-primary transition-colors"
           >
-            Estatísticas
+            Modalidades
           </button>
         </nav>
 
@@ -530,7 +688,7 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
             <Search className="h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Buscar times, partidas..."
+              placeholder="Buscar esportes, times..."
               className="border-0 bg-transparent focus-visible:ring-0 p-0 h-6"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -543,7 +701,7 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
           </Button>
 
           <Link to="/dashboard" className="hidden sm:block">
-            <Button size="sm" className="bg-gradient-primary">
+            <Button size="sm" className={currentSport.cor}>
               Admin
             </Button>
           </Link>
@@ -564,6 +722,12 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
       {mobileMenuOpen && (
         <div className="lg:hidden border-t bg-background">
           <nav className="container mx-auto px-4 py-4 flex flex-col gap-3">
+            <button 
+              onClick={() => scrollToSection('modalidades')}
+              className="text-left text-sm font-medium hover:text-primary transition-colors py-2"
+            >
+              🏅 Modalidades
+            </button>
             <button 
               onClick={() => scrollToSection('partidas')}
               className="text-left text-sm font-medium hover:text-primary transition-colors py-2"
@@ -588,14 +752,8 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
             >
               📰 Notícias
             </button>
-            <button 
-              onClick={() => scrollToSection('estatisticas')}
-              className="text-left text-sm font-medium hover:text-primary transition-colors py-2"
-            >
-              📈 Estatísticas
-            </button>
             <Link to="/dashboard" className="block">
-              <Button size="sm" className="w-full bg-gradient-primary">
+              <Button size="sm" className={`w-full ${currentSport.cor}`}>
                 Área Administrativa
               </Button>
             </Link>
@@ -604,38 +762,77 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
       )}
     </header>
 
-    {/* ==================== HERO SECTION ==================== */}
-    <section className="relative h-[600px] overflow-hidden">
+    {/* ==================== HERO SECTION COM SELETOR DE ESPORTES ==================== */}
+    <section className="relative overflow-hidden">
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${heroImage})` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-black/30" />
+        <div className={`absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent`} />
       </div>
-      <div className="relative container mx-auto px-4 h-full flex items-center">
-        <div className="max-w-3xl space-y-6 animate-fade-in">
-          <Badge className="bg-red-600 text-white animate-pulse px-4 py-1">
-            <Play className="h-4 w-4 mr-2 inline" />
-            8 PARTIDAS AO VIVO AGORA
-          </Badge>
+      <div className="relative container mx-auto px-4 py-16">
+        <div className="max-w-4xl space-y-8 animate-fade-in">
+          <div className="flex items-center gap-3">
+            <Badge className="bg-red-600 text-white animate-pulse px-4 py-2">
+              <Play className="h-5 w-5 mr-2 inline" />
+              24 PARTIDAS AO VIVO
+            </Badge>
+            <Badge className={`${currentSport.cor} text-white px-4 py-2`}>
+              <currentSport.icone className="h-5 w-5 mr-2 inline" />
+              {currentSport.nome.toUpperCase()}
+            </Badge>
+          </div>
+          
           <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight">
-            A Emoção do Esporte<br />
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Em Tempo Real
+            Multi-Esportivo<br />
+            <span className={`bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent`}>
+              Todos os Esportes em Um Só Lugar
             </span>
           </h1>
-          <p className="text-xl text-gray-200 max-w-2xl">
-            Acompanhe todos os jogos, resultados, estatísticas e notícias dos melhores 
-            campeonatos juvenis do Brasil. Sua dose diária de esporte está aqui!
+          
+          <p className="text-xl text-gray-200 max-w-3xl">
+            Futebol, vôlei, basquete, natação e muito mais! Acompanhe resultados, 
+            classificações e notícias de todas as modalidades em tempo real.
           </p>
+
+          {/* Seletor de Modalidades */}
+          <div className="bg-black/40 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
+            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+              <Trophy className="h-5 w-5" />
+              Escolha seu Esporte
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+              {SPORTS_CONFIG.map((sport) => {
+                const IconComponent = sport.icone;
+                const isActive = selectedSport === sport.id;
+                return (
+                  <button
+                    key={sport.id}
+                    onClick={() => handleSportChange(sport.id)}
+                    className={`
+                      p-4 rounded-xl transition-all duration-300 group
+                      ${isActive 
+                        ? `${sport.cor} text-white shadow-lg scale-105` 
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                      }
+                    `}
+                  >
+                    <IconComponent className={`h-8 w-8 mx-auto mb-2 ${isActive ? '' : 'group-hover:scale-110'} transition-transform`} />
+                    <span className="text-xs font-semibold block">{sport.nome}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="flex flex-wrap gap-4">
             <Button 
               size="lg" 
-              className="bg-gradient-primary hover:scale-105 transition-transform"
+              className={`${currentSport.cor} hover:scale-105 transition-transform text-white`}
               onClick={() => scrollToSection('partidas')}
             >
               <Calendar className="mr-2 h-5 w-5" />
-              Ver Programação Completa
+              Ver Programação
             </Button>
             <Button 
               size="lg" 
@@ -666,10 +863,10 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
               className="hover:shadow-lg transition-all hover:-translate-y-1 bg-background/80 backdrop-blur"
             >
               <CardContent className="p-6 text-center space-y-2">
-                <div className="w-12 h-12 mx-auto bg-gradient-primary rounded-full flex items-center justify-center mb-3">
+                <div className={`w-12 h-12 mx-auto ${currentSport.cor} rounded-full flex items-center justify-center mb-3`}>
                   <stat.icone className="h-6 w-6 text-white" />
                 </div>
-                <p className="text-3xl font-bold text-primary">{stat.valor}</p>
+                <p className="text-3xl font-bold" style={{ color: currentSport.corHex }}>{stat.valor}</p>
                 <p className="text-sm text-muted-foreground">{stat.label}</p>
                 {stat.tendencia && (
                   <Badge variant="outline" className="text-xs">
@@ -679,6 +876,62 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
               </CardContent>
             </Card>
           ))}
+        </div>
+      </div>
+    </section>
+
+    {/* ==================== SEÇÃO DE MODALIDADES ==================== */}
+    <section id="modalidades" className="py-16 bg-muted/30">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold mb-3">Todas as Modalidades</h2>
+          <p className="text-muted-foreground text-lg">
+            Escolha seu esporte favorito e acompanhe tudo em tempo real
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {SPORTS_CONFIG.slice(1).map((sport) => {
+            const IconComponent = sport.icone;
+            return (
+              <Card 
+                key={sport.id}
+                className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                onClick={() => {
+                  handleSportChange(sport.id);
+                  scrollToSection('partidas');
+                }}
+              >
+                <div className={`h-32 ${sport.cor} relative overflow-hidden`}>
+                  <div className="absolute inset-0 bg-black/20" />
+                  <IconComponent className="h-20 w-20 text-white/20 absolute -right-4 -bottom-4 group-hover:scale-110 transition-transform" />
+                  <div className="relative p-6 flex items-center gap-4">
+                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                      <IconComponent className="h-10 w-10 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-white">{sport.nome}</h3>
+                      <p className="text-white/80 text-sm">{sport.descricao}</p>
+                    </div>
+                  </div>
+                </div>
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-3xl font-bold" style={{ color: sport.corHex }}>
+                        {Math.floor(Math.random() * 50) + 10}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Partidas esta semana</p>
+                    </div>
+                    <Button className={sport.cor}>
+                      Ver Mais
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -717,13 +970,15 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
     )}
 
     {/* ==================== PRÓXIMAS PARTIDAS ==================== */}
-    <section id="partidas" className="py-16 bg-muted/30">
+    <section id="partidas" className="py-16 bg-background">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
             <h2 className="text-4xl font-bold mb-2">Próximas Partidas</h2>
             <p className="text-muted-foreground text-lg">
-              Não perca nenhum jogo desta semana
+              {selectedSport === "todos" 
+                ? "Acompanhe todos os esportes" 
+                : `Calendário de ${currentSport.nome}`}
             </p>
           </div>
           <div className="flex gap-3">
@@ -732,8 +987,8 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
               Filtrar
             </Button>
             <Link to="/partidas">
-              <Button className="bg-gradient-primary">
-                Ver Todas as Partidas
+              <Button className={currentSport.cor}>
+                Ver Todas
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
@@ -748,7 +1003,7 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
           <EmptyState
             icon={Calendar}
             titulo="Nenhuma partida agendada"
-            descricao="No momento não há partidas programadas. Volte em breve para conferir novos jogos!"
+            descricao={`No momento não há partidas de ${currentSport.nome.toLowerCase()} programadas.`}
           />
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -766,7 +1021,7 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
     </section>
 
     {/* ==================== ÚLTIMOS RESULTADOS ==================== */}
-    <section id="resultados" className="py-16 bg-background">
+    <section id="resultados" className="py-16 bg-muted/30">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
@@ -776,8 +1031,8 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
             </p>
           </div>
           <Link to="/partidas">
-            <Button className="bg-gradient-secondary">
-              Ver Todos os Resultados
+            <Button className={currentSport.cor}>
+              Ver Todos
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
@@ -808,14 +1063,14 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
       </div>
     </section>
 
-    {/* ==================== RANKINGS COM FILTROS ==================== */}
-    <section id="rankings" className="py-16 bg-muted/30">
+    {/* ==================== RANKINGS ==================== */}
+    <section id="rankings" className="py-16 bg-background">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
-            <h2 className="text-4xl font-bold mb-2">Classificação Geral</h2>
+            <h2 className="text-4xl font-bold mb-2">Classificação</h2>
             <p className="text-muted-foreground text-lg">
-              Acompanhe a tabela atualizada do campeonato
+              Tabelas atualizadas de {currentSport.nome.toLowerCase()}
             </p>
           </div>
           <div className="flex gap-3">
@@ -832,7 +1087,7 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
               </SelectContent>
             </Select>
             <Link to="/rankings">
-              <Button className="bg-gradient-primary">
+              <Button className={currentSport.cor}>
                 Tabela Completa
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -850,10 +1105,11 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
           />
         ) : (
           <Card className="overflow-hidden shadow-xl">
+            <div className={`h-2 ${currentSport.cor}`} />
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gradient-primary text-white">
+                  <thead style={{ background: currentSport.corHex }} className="text-white">
                     <tr>
                       <th className="px-6 py-4 text-left text-sm font-bold">POS</th>
                       <th className="px-6 py-4 text-left text-sm font-bold">EQUIPE</th>
@@ -879,12 +1135,15 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
                         >
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <span className={`flex items-center justify-center w-10 h-10 rounded-full font-bold text-white ${
-                                index === 0 ? 'bg-yellow-500' :
-                                index === 1 ? 'bg-gray-400' :
-                                index === 2 ? 'bg-orange-600' :
-                                'bg-primary/70'
-                              }`}>
+                              <span 
+                                className={`flex items-center justify-center w-10 h-10 rounded-full font-bold text-white`}
+                                style={{
+                                  background: index === 0 ? '#FFD700' :
+                                             index === 1 ? '#C0C0C0' :
+                                             index === 2 ? '#CD7F32' :
+                                             currentSport.corHex
+                                }}
+                              >
                                 {index + 1}
                               </span>
                               {isTop3 && (
@@ -894,12 +1153,16 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              {rank.equipes?.logo_url && (
+                              {rank.equipes?.logo_url ? (
                                 <img 
                                   src={rank.equipes.logo_url} 
                                   alt="" 
                                   className="w-8 h-8 rounded-full"
                                 />
+                              ) : (
+                                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                                  <SportIcon modalidade={rank.modalidade} className="w-5 h-5" />
+                                </div>
                               )}
                               <span className="font-semibold">{rank.equipes?.nome}</span>
                             </div>
@@ -908,7 +1171,9 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
                             {rank.vitorias + rank.empates + rank.derrotas}
                           </td>
                           <td className="px-6 py-4 text-center">
-                            <span className="font-bold text-lg text-primary">{rank.pontos}</span>
+                            <span className="font-bold text-lg" style={{ color: currentSport.corHex }}>
+                              {rank.pontos}
+                            </span>
                           </td>
                           <td className="px-6 py-4 text-center text-green-600 font-semibold">
                             {rank.vitorias}
@@ -947,23 +1212,23 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
     </section>
 
     {/* ==================== NOTÍCIAS ==================== */}
-    <section id="noticias" className="py-16 bg-background">
+    <section id="noticias" className="py-16 bg-muted/30">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
             <h2 className="text-4xl font-bold mb-2">Últimas Notícias</h2>
             <p className="text-muted-foreground text-lg">
-              Fique por dentro de tudo que acontece no mundo esportivo
+              Fique por dentro do mundo esportivo
             </p>
           </div>
-          <Button className="bg-gradient-secondary">
+          <Button className={currentSport.cor}>
             <Newspaper className="mr-2 h-5 w-5" />
-            Ver Todas as Notícias
+            Ver Todas
           </Button>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {noticias.map((noticia) => (
+          {noticiasFiltradas.map((noticia) => (
             <NoticiaCard
               key={noticia.id}
               noticia={noticia}
@@ -975,19 +1240,19 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
     </section>
 
     {/* ==================== PATROCINADORES ==================== */}
-    <section id="patrocinadores" className="py-16 bg-gradient-to-br from-primary/5 to-secondary/5">
+    <section id="patrocinadores" className="py-16 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold mb-3">Nossos Patrocinadores</h2>
           <p className="text-muted-foreground text-lg">
-            Empresas que investem e acreditam no esporte de base
+            Empresas que apoiam o esporte de base
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
           {[sponsor1, sponsor2, sponsor3, sponsor1, sponsor2, sponsor3].map((sponsor, index) => (
             <div
               key={index}
-              className="flex items-center justify-center p-6 bg-background rounded-xl hover:shadow-xl transition-all grayscale hover:grayscale-0 hover:scale-110 cursor-pointer"
+              className="flex items-center justify-center p-6 bg-muted rounded-xl hover:shadow-xl transition-all grayscale hover:grayscale-0 hover:scale-110 cursor-pointer"
             >
               <OptimizedImage
                 src={sponsor}
@@ -1001,18 +1266,19 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
     </section>
 
     {/* ==================== CTA SECTION ==================== */}
-    <section className="py-20 bg-gradient-primary text-white">
+    <section className={`py-20 ${currentSport.cor} text-white`}>
       <div className="container mx-auto px-4 text-center">
         <div className="max-w-3xl mx-auto space-y-6">
+          <currentSport.icone className="h-16 w-16 mx-auto text-white/80" />
           <h2 className="text-4xl md:text-5xl font-bold">
-            Não Perca Nenhum Lance!
+            Não Perca Nenhuma Jogada!
           </h2>
           <p className="text-xl text-white/90">
-            Receba notificações sobre suas equipes favoritas, partidas ao vivo e 
-            muito mais diretamente no seu dispositivo.
+            Receba notificações de {currentSport.nome.toLowerCase()}, suas equipes favoritas 
+            e muito mais diretamente no seu dispositivo.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-primary hover:bg-gray-100">
+            <Button size="lg" className="bg-white hover:bg-gray-100" style={{ color: currentSport.corHex }}>
               <Bell className="mr-2 h-5 w-5" />
               Ativar Notificações
             </Button>
@@ -1031,12 +1297,14 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <Trophy className="h-8 w-8 text-primary" />
+              <div className={`p-2 rounded-lg ${currentSport.cor}`}>
+                <Trophy className="h-6 w-6 text-white" />
+              </div>
               <span className="text-2xl font-bold">Sports Arena</span>
             </div>
             <p className="text-muted-foreground max-w-md">
-              O portal mais completo de esportes juvenis do Brasil. Acompanhe partidas, 
-              resultados, rankings e notícias em tempo real.
+              O portal multi-esportivo mais completo do Brasil. Acompanhe futebol, vôlei, 
+              basquete, natação e muito mais em tempo real.
             </p>
             <div className="flex gap-3">
               <Button variant="outline" size="icon" className="rounded-full">
@@ -1049,6 +1317,23 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
                 <Activity className="h-4 w-4" />
               </Button>
             </div>
+          </div>
+
+          <div>
+            <h4 className="font-bold mb-4 text-lg">Esportes</h4>
+            <ul className="space-y-3">
+              {SPORTS_CONFIG.slice(1, 5).map((sport) => (
+                <li key={sport.id}>
+                  <button 
+                    onClick={() => handleSportChange(sport.id)}
+                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
+                  >
+                    <sport.icone className="h-4 w-4" />
+                    {sport.nome}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div>
@@ -1090,24 +1375,6 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
           </div>
 
           <div>
-            <h4 className="font-bold mb-4 text-lg">Competições</h4>
-            <ul className="space-y-3 text-muted-foreground">
-              <li className="hover:text-primary transition-colors cursor-pointer">
-                Copa São Paulo Sub-17
-              </li>
-              <li className="hover:text-primary transition-colors cursor-pointer">
-                Campeonato Paulista Sub-20
-              </li>
-              <li className="hover:text-primary transition-colors cursor-pointer">
-                Torneio Regional
-              </li>
-              <li className="hover:text-primary transition-colors cursor-pointer">
-                Liga Metropolitana
-              </li>
-            </ul>
-          </div>
-
-          <div>
             <h4 className="font-bold mb-4 text-lg">Contato</h4>
             <ul className="space-y-3 text-muted-foreground">
               <li className="flex items-start gap-2">
@@ -1124,7 +1391,7 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
               </li>
               <li className="flex items-start gap-2">
                 <span>🕐</span>
-                <span>Seg-Sex: 8h às 18h</span>
+                <span>24/7 - Acompanhe sempre</span>
               </li>
             </ul>
           </div>
@@ -1133,7 +1400,7 @@ content="Acompanhe em tempo real partidas, resultados, classificações e notíc
         <div className="pt-8 border-t">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground text-center md:text-left">
-              © 2025 Sports Arena. Todos os direitos reservados. Desenvolvido com ❤️ para o esporte brasileiro.
+              © 2025 Sports Arena. Todos os direitos reservados. Portal Multi-Esportivo 🏆⚽🏐🏀🏊🎾
             </p>
             <div className="flex gap-6 text-sm text-muted-foreground">
               <a href="#" className="hover:text-primary transition-colors">
