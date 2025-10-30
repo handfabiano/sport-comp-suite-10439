@@ -797,6 +797,15 @@ const Index = () => {
                 <Button 
                   size="lg" 
                   className={`${currentSport.cor} hover:scale-105 transition-transform text-white`}
+                  onClick={() => window.location.href = '/eventos'}
+                >
+                  <Users className="mr-2 h-5 w-5" />
+                  Inscrever Equipe
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="bg-white/10 text-white border-white hover:bg-white/20 backdrop-blur-sm"
                   onClick={() => scrollToSection('partidas')}
                 >
                   <Calendar className="mr-2 h-5 w-5" />

@@ -219,31 +219,46 @@ export default function Eventos() {
                   </div>
                 )}
               </CardContent>
-              <div className="flex gap-2 p-4 pt-0 border-t">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setEditingEvento(evento);
-                  }}
-                >
-                  <Edit className="h-4 w-4 mr-1" />
-                  Editar
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="flex-1"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDeleteId(evento.id);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Excluir
-                </Button>
+              <div className="flex flex-col gap-2 p-4 pt-0 border-t">
+                {evento.status === 'inscricoes_abertas' && (
+                  <Button
+                    size="sm"
+                    className="w-full bg-gradient-primary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.location.href = `/eventos/${evento.id}`;
+                    }}
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    Inscrever Equipe
+                  </Button>
+                )}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingEvento(evento);
+                    }}
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    Editar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="flex-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteId(evento.id);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Excluir
+                  </Button>
+                </div>
               </div>
             </Card>
           ))}
