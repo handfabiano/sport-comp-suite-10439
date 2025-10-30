@@ -3,10 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Settings, Trophy } from "lucide-react";
+import { ArrowLeft, Settings, Trophy, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import EventoConfigPartidas from "@/components/EventoConfigPartidas";
 import GeradorPartidas from "@/components/GeradorPartidas";
+import InscricaoEquipeEvento from "@/components/InscricaoEquipeEvento";
 import PartidaCard from "@/components/PartidaCard";
 import PartidaForm from "@/components/PartidaForm";
 import PartidaDetalhes from "@/components/PartidaDetalhes";
@@ -130,6 +131,10 @@ export default function EventoDetalhes() {
             <Trophy className="h-4 w-4 mr-2" />
             Partidas
           </TabsTrigger>
+          <TabsTrigger value="inscricoes">
+            <UserPlus className="h-4 w-4 mr-2" />
+            Inscrições
+          </TabsTrigger>
           <TabsTrigger value="configuracoes">
             <Settings className="h-4 w-4 mr-2" />
             Configurações
@@ -183,6 +188,10 @@ export default function EventoDetalhes() {
               />
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="inscricoes">
+          <InscricaoEquipeEvento eventoId={id!} evento={evento} />
         </TabsContent>
 
         <TabsContent value="configuracoes">
