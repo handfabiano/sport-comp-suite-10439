@@ -1128,10 +1128,7 @@ export type Database = {
       }
     }
     Functions: {
-      event_has_started: {
-        Args: { _evento_id: string }
-        Returns: boolean
-      }
+      event_has_started: { Args: { _evento_id: string }; Returns: boolean }
       gerar_partidas_evento: {
         Args: { p_categoria: string; p_evento_id: string }
         Returns: {
