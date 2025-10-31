@@ -82,7 +82,6 @@ export type Database = {
           data_ultima_avaliacao: string | null
           documento: string
           email: string | null
-          equipe_id: string | null
           estado: string | null
           foto_url: string | null
           id: string
@@ -125,7 +124,6 @@ export type Database = {
           data_ultima_avaliacao?: string | null
           documento: string
           email?: string | null
-          equipe_id?: string | null
           estado?: string | null
           foto_url?: string | null
           id?: string
@@ -168,7 +166,6 @@ export type Database = {
           data_ultima_avaliacao?: string | null
           documento?: string
           email?: string | null
-          equipe_id?: string | null
           estado?: string | null
           foto_url?: string | null
           id?: string
@@ -193,20 +190,6 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "atletas_equipe_id_fkey"
-            columns: ["equipe_id"]
-            isOneToOne: false
-            referencedRelation: "equipes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "atletas_equipe_id_fkey"
-            columns: ["equipe_id"]
-            isOneToOne: false
-            referencedRelation: "equipes_public"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "atletas_user_id_fkey"
             columns: ["user_id"]
@@ -309,6 +292,62 @@ export type Database = {
           },
           {
             foreignKeyName: "convites_equipe_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipe_atletas: {
+        Row: {
+          ativo: boolean
+          atleta_id: string
+          created_at: string
+          data_entrada: string
+          equipe_id: string
+          id: string
+        }
+        Insert: {
+          ativo?: boolean
+          atleta_id: string
+          created_at?: string
+          data_entrada?: string
+          equipe_id: string
+          id?: string
+        }
+        Update: {
+          ativo?: boolean
+          atleta_id?: string
+          created_at?: string
+          data_entrada?: string
+          equipe_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipe_atletas_atleta_id_fkey"
+            columns: ["atleta_id"]
+            isOneToOne: false
+            referencedRelation: "atletas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipe_atletas_atleta_id_fkey"
+            columns: ["atleta_id"]
+            isOneToOne: false
+            referencedRelation: "atletas_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipe_atletas_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipe_atletas_equipe_id_fkey"
             columns: ["equipe_id"]
             isOneToOne: false
             referencedRelation: "equipes_public"
@@ -434,7 +473,11 @@ export type Database = {
           formato_partidas: Json | null
           gera_partidas_automatico: boolean | null
           id: string
+          idade_maxima: number | null
+          idade_minima: number | null
           intervalo_partidas: number | null
+          limite_atletas_feminino: number | null
+          limite_atletas_masculino: number | null
           limite_atletas_por_equipe: number | null
           limite_equipes_por_categoria: number | null
           local: string
@@ -452,6 +495,7 @@ export type Database = {
           redes_sociais: Json | null
           regras_especificas: string | null
           regulamento_url: string | null
+          sexo_competicao: string | null
           status: Database["public"]["Enums"]["event_status"]
           tipo_competicao: string | null
           tipo_sistema_partidas: string | null
@@ -478,7 +522,11 @@ export type Database = {
           formato_partidas?: Json | null
           gera_partidas_automatico?: boolean | null
           id?: string
+          idade_maxima?: number | null
+          idade_minima?: number | null
           intervalo_partidas?: number | null
+          limite_atletas_feminino?: number | null
+          limite_atletas_masculino?: number | null
           limite_atletas_por_equipe?: number | null
           limite_equipes_por_categoria?: number | null
           local: string
@@ -496,6 +544,7 @@ export type Database = {
           redes_sociais?: Json | null
           regras_especificas?: string | null
           regulamento_url?: string | null
+          sexo_competicao?: string | null
           status?: Database["public"]["Enums"]["event_status"]
           tipo_competicao?: string | null
           tipo_sistema_partidas?: string | null
@@ -522,7 +571,11 @@ export type Database = {
           formato_partidas?: Json | null
           gera_partidas_automatico?: boolean | null
           id?: string
+          idade_maxima?: number | null
+          idade_minima?: number | null
           intervalo_partidas?: number | null
+          limite_atletas_feminino?: number | null
+          limite_atletas_masculino?: number | null
           limite_atletas_por_equipe?: number | null
           limite_equipes_por_categoria?: number | null
           local?: string
@@ -540,6 +593,7 @@ export type Database = {
           redes_sociais?: Json | null
           regras_especificas?: string | null
           regulamento_url?: string | null
+          sexo_competicao?: string | null
           status?: Database["public"]["Enums"]["event_status"]
           tipo_competicao?: string | null
           tipo_sistema_partidas?: string | null
@@ -1004,7 +1058,6 @@ export type Database = {
           ativo: boolean | null
           categoria: string | null
           created_at: string | null
-          equipe_id: string | null
           foto_url: string | null
           id: string | null
           nome: string | null
@@ -1018,7 +1071,6 @@ export type Database = {
           ativo?: boolean | null
           categoria?: string | null
           created_at?: string | null
-          equipe_id?: string | null
           foto_url?: string | null
           id?: string | null
           nome?: string | null
@@ -1032,7 +1084,6 @@ export type Database = {
           ativo?: boolean | null
           categoria?: string | null
           created_at?: string | null
-          equipe_id?: string | null
           foto_url?: string | null
           id?: string | null
           nome?: string | null
@@ -1041,22 +1092,7 @@ export type Database = {
           peso?: number | null
           posicao?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "atletas_equipe_id_fkey"
-            columns: ["equipe_id"]
-            isOneToOne: false
-            referencedRelation: "equipes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "atletas_equipe_id_fkey"
-            columns: ["equipe_id"]
-            isOneToOne: false
-            referencedRelation: "equipes_public"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       equipes_public: {
         Row: {
