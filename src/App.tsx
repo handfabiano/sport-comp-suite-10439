@@ -27,6 +27,8 @@ import Responsaveis from "./pages/Responsaveis";
 import MinhasEquipes from "./pages/MinhasEquipes";
 import Admin from "./pages/Admin";
 import Relacoes from "./pages/admin/Relacoes";
+import Organizador from "./pages/Organizador";
+import Responsavel from "./pages/Responsavel";
 
 // Create optimized query client with advanced caching
 const queryClient = createQueryClient();
@@ -50,6 +52,8 @@ const App = () => (
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/admin/relacoes" element={<Relacoes />} />
+                  <Route path="/organizador" element={<Organizador />} />
+                  <Route path="/responsavel" element={<Responsavel />} />
                   <Route path="/eventos" element={<Eventos />} />
                   <Route path="/eventos/:id" element={<EventoDetalhes />} />
                   <Route path="/atletas" element={<Atletas />} />

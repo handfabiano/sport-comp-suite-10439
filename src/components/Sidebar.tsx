@@ -28,6 +28,8 @@ import { toast } from "sonner";
 const allMenuItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, roles: ["admin", "organizador", "responsavel", "atleta"] },
   { title: "Administração", url: "/admin", icon: Shield, roles: ["admin"] },
+  { title: "Painel Organizador", url: "/organizador", icon: Trophy, roles: ["organizador", "admin"] },
+  { title: "Painel Responsável", url: "/responsavel", icon: Users2, roles: ["responsavel"] },
   { title: "Eventos", url: "/eventos", icon: Calendar, roles: ["admin", "organizador"] },
   { title: "Atletas", url: "/atletas", icon: Users, roles: ["admin", "organizador"] },
   { title: "Equipes", url: "/equipes", icon: Users2, roles: ["admin", "organizador"] },
