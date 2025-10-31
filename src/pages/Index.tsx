@@ -244,20 +244,20 @@ const PartidaCard = ({
         <div className="flex items-center justify-between py-4">
           <div className="flex-1 text-center space-y-2">
             <div className="w-12 h-12 mx-auto bg-muted rounded-full flex items-center justify-center">
-              {partida.equipe_a.logo_url ? (
+              {partida.equipe_a?.logo_url ? (
                 <img src={partida.equipe_a.logo_url} alt="" className="w-8 h-8" />
               ) : (
                 <Trophy className="w-6 h-6 text-muted-foreground" />
               )}
             </div>
-            <p className="font-bold text-sm">{partida.equipe_a.nome}</p>
+            <p className="font-bold text-sm">{partida.equipe_a?.nome ?? 'Equipe A'}</p>
             {showScore && (
               <p className="text-3xl font-bold" style={{ color: sport.corHex }}>
-                {partida.placar_a}
+                {partida.placar_a ?? 0}
               </p>
             )}
           </div>
-          
+
           <div className="px-4">
             <div className="text-2xl font-bold text-muted-foreground">
               {showScore ? '×' : 'VS'}
@@ -269,19 +269,19 @@ const PartidaCard = ({
               </Badge>
             )}
           </div>
-          
+
           <div className="flex-1 text-center space-y-2">
             <div className="w-12 h-12 mx-auto bg-muted rounded-full flex items-center justify-center">
-              {partida.equipe_b.logo_url ? (
+              {partida.equipe_b?.logo_url ? (
                 <img src={partida.equipe_b.logo_url} alt="" className="w-8 h-8" />
               ) : (
                 <Trophy className="w-6 h-6 text-muted-foreground" />
               )}
             </div>
-            <p className="font-bold text-sm">{partida.equipe_b.nome}</p>
+            <p className="font-bold text-sm">{partida.equipe_b?.nome ?? 'Equipe B'}</p>
             {showScore && (
               <p className="text-3xl font-bold" style={{ color: sport.corHex }}>
-                {partida.placar_b}
+                {partida.placar_b ?? 0}
               </p>
             )}
           </div>

@@ -157,7 +157,7 @@ export default function PartidaDetalhes({ partidaId, open, onClose }: PartidaDet
                 <CardContent>
                   <div className="flex items-center justify-between gap-8">
                     <div className="flex-1 text-center space-y-4">
-                      <h3 className="font-bold text-xl">{partida.equipe_a.nome}</h3>
+                      <h3 className="font-bold text-xl">{partida.equipe_a?.nome ?? 'Equipe A'}</h3>
                       <div className="flex items-center justify-center gap-2">
                         <Button
                           variant="outline"
@@ -188,7 +188,7 @@ export default function PartidaDetalhes({ partidaId, open, onClose }: PartidaDet
                     <div className="text-4xl font-bold text-muted-foreground">×</div>
 
                     <div className="flex-1 text-center space-y-4">
-                      <h3 className="font-bold text-xl">{partida.equipe_b.nome}</h3>
+                      <h3 className="font-bold text-xl">{partida.equipe_b?.nome ?? 'Equipe B'}</h3>
                       <div className="flex items-center justify-center gap-2">
                         <Button
                           variant="outline"

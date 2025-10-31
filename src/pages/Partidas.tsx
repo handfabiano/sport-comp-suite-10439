@@ -107,9 +107,9 @@ export default function Partidas() {
 
   const partidasFiltradas = partidas.filter((partida) => {
     const matchSearch =
-      partida.equipe_a.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      partida.equipe_b.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      partida.local.toLowerCase().includes(searchTerm.toLowerCase());
+      partida.equipe_a?.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      partida.equipe_b?.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      partida.local?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchEvento = filtroEvento === "todos" || partida.evento_id === filtroEvento;
 
