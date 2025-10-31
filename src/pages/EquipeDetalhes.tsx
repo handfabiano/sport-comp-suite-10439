@@ -119,10 +119,26 @@ const EquipeDetalhes = () => {
 
   const fetchAtletas = async () => {
     try {
+      // Buscar atletas através da tabela de relacionamento
+      const { data: equipeAtletasData, error: equipeAtletasError } = await supabase
+        .from("equipe_atletas")
+        .select("atleta_id")
+        .eq("equipe_id", id)
+        .eq("ativo", true);
+
+      if (equipeAtletasError) throw equipeAtletasError;
+      
+      const atletasIds = equipeAtletasData?.map(ea => ea.atleta_id) || [];
+      
+      if (atletasIds.length === 0) {
+        setAtletas([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("atletas")
         .select("id, nome, foto_url, numero_uniforme, posicao, categoria")
-        .eq("equipe_id", id)
+        .in("id", atletasIds)
         .order("numero_uniforme", { ascending: true, nullsFirst: false });
 
       if (error) throw error;

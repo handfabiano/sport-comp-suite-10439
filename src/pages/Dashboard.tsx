@@ -56,9 +56,10 @@ export default function Dashboard() {
           supabase.from("partidas").select("id", { count: "exact", head: true }).in("evento_id", eventoIds),
         ]);
 
-        // Buscar atletas das equipes
+        // Buscar atletas das equipes através da tabela de relacionamento
         const equipesIds = (await supabase.from("equipes").select("id").in("evento_id", eventoIds)).data?.map(e => e.id) || [];
-        const atletas = await supabase.from("atletas").select("id", { count: "exact", head: true }).in("equipe_id", equipesIds);
+        const atletasIds = (await supabase.from("equipe_atletas").select("atleta_id").in("equipe_id", equipesIds)).data?.map(ea => ea.atleta_id) || [];
+        const atletas = await supabase.from("atletas").select("id", { count: "exact", head: true }).in("id", atletasIds);
 
         setStats({
           eventos: eventos.count || 0,
@@ -76,9 +77,13 @@ export default function Dashboard() {
 
         const equipeIds = equipesData?.map(e => e.equipe_id).filter(Boolean) || [];
         
+        // Buscar atletas através da tabela de relacionamento
+        const atletasIdsData = await supabase.from("equipe_atletas").select("atleta_id").in("equipe_id", equipeIds);
+        const atletasIds = atletasIdsData.data?.map(ea => ea.atleta_id) || [];
+        
         const [equipes, atletas] = await Promise.all([
           supabase.from("equipes").select("id", { count: "exact", head: true }).in("id", equipeIds),
-          supabase.from("atletas").select("id", { count: "exact", head: true }).in("equipe_id", equipeIds),
+          supabase.from("atletas").select("id", { count: "exact", head: true }).in("id", atletasIds),
         ]);
 
         setStats({
