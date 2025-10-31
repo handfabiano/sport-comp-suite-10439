@@ -23,20 +23,10 @@ interface Atleta {
   telefone: string | null;
   cidade: string | null;
   estado: string | null;
-  equipe_id: string | null;
   tipo_sanguineo: string | null;
   alergias: string | null;
   medicamentos: string | null;
   clubes_anteriores: string[];
-  equipes: {
-    nome: string;
-    logo_url: string | null;
-    categoria: string;
-    eventos: {
-      nome: string;
-      banner_url: string | null;
-    };
-  } | null;
 }
 
 const AtletaDetalhes = () => {
@@ -52,23 +42,12 @@ const AtletaDetalhes = () => {
     try {
       const { data, error } = await supabase
         .from("atletas")
-        .select(`
-          *,
-          equipes:equipe_id (
-            nome,
-            logo_url,
-            categoria,
-            eventos:evento_id (
-              nome,
-              banner_url
-            )
-          )
-        `)
+        .select("*")
         .eq("id", id)
         .single();
 
       if (error) throw error;
-      setAtleta(data);
+      setAtleta(data as any);
     } catch (error) {
       console.error("Erro ao buscar atleta:", error);
     } finally {
@@ -141,33 +120,6 @@ const AtletaDetalhes = () => {
         </Card>
 
         <div className="md:col-span-2 space-y-6">
-          {atleta.equipes && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Equipe Atual
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Link to={`/equipes/${atleta.equipe_id}`}>
-                  <div className="flex items-center gap-4 hover:bg-accent p-4 rounded-lg transition-colors">
-                    <Avatar className="h-16 w-16">
-                      <AvatarImage src={atleta.equipes.logo_url || ""} />
-                      <AvatarFallback>{atleta.equipes.nome[0]}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="font-semibold text-lg">{atleta.equipes.nome}</h3>
-                      <p className="text-sm text-muted-foreground">{atleta.equipes.categoria}</p>
-                      {atleta.equipes.eventos && (
-                        <p className="text-sm text-muted-foreground">{atleta.equipes.eventos.nome}</p>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              </CardContent>
-            </Card>
-          )}
 
           <Card>
             <CardHeader>

@@ -9,9 +9,9 @@ export interface Atleta {
   categoria: string;
   posicao: string | null;
   numero_uniforme: number | null;
-  equipe_id: string | null;
   data_nascimento: string | null;
   ativo: boolean;
+  sexo?: string;
 }
 
 export function useAtleta(atletaId?: string) {
@@ -50,7 +50,7 @@ export function useAtleta(atletaId?: string) {
     }
   };
 
-  const fetchAtletas = async (filters?: { categoria?: string; equipeId?: string }) => {
+  const fetchAtletas = async (filters?: { categoria?: string }) => {
     setLoading(true);
     try {
       let query = supabase
@@ -60,9 +60,6 @@ export function useAtleta(atletaId?: string) {
 
       if (filters?.categoria) {
         query = query.eq("categoria", filters.categoria);
-      }
-      if (filters?.equipeId) {
-        query = query.eq("equipe_id", filters.equipeId);
       }
 
       const { data, error } = await query;

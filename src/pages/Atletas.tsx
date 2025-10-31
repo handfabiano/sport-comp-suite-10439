@@ -26,7 +26,6 @@ interface Atleta {
   altura: number | null;
   peso: number | null;
   ativo: boolean | null;
-  equipes?: { nome: string } | null;
 }
 
 export default function Atletas() {
@@ -57,15 +56,12 @@ export default function Atletas() {
     setLoading(true);
     const { data, error } = await supabase
       .from("atletas")
-      .select(`
-        *,
-        equipes (nome)
-      `)
+      .select("*")
       .order("nome");
 
     if (!error && data) {
-      setAtletas(data);
-      setFilteredAtletas(data);
+      setAtletas(data as any);
+      setFilteredAtletas(data as any);
     }
     setLoading(false);
   };
@@ -188,12 +184,6 @@ export default function Atletas() {
                         </div>
                       )}
 
-                      {atleta.equipes && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Users className="h-3.5 w-3.5 flex-shrink-0" />
-                          <span className="truncate">{atleta.equipes.nome}</span>
-                        </div>
-                      )}
 
                       {idade !== null && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">

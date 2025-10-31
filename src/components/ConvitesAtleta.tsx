@@ -70,14 +70,17 @@ export default function ConvitesAtleta() {
 
       if (updateError) throw updateError;
 
-      // Se aceitar, atualizar o atleta com a equipe
+      // Se aceitar, adicionar atleta à equipe através da tabela equipe_atletas
       if (aceitar) {
         const convite = convites.find((c) => c.id === conviteId);
         if (convite && atleta) {
           const { error: atletaError } = await supabase
-            .from("atletas")
-            .update({ equipe_id: convite.equipe_id })
-            .eq("id", atleta.id);
+            .from("equipe_atletas")
+            .insert({ 
+              equipe_id: convite.equipe_id,
+              atleta_id: atleta.id,
+              ativo: true 
+            });
 
           if (atletaError) throw atletaError;
         }
