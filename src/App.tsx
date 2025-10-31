@@ -1,10 +1,12 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { ThemeProvider } from "next-themes";
 import { Layout } from "./components/Layout";
+import { createQueryClient } from "./lib/query-client";
 import Auth from "./pages/Auth";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -26,50 +28,44 @@ import MinhasEquipes from "./pages/MinhasEquipes";
 import Admin from "./pages/Admin";
 import Relacoes from "./pages/admin/Relacoes";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 10, // 10 minutes (formerly cacheTime)
-      refetchOnWindowFocus: false,
-      retry: 1,
-    },
-  },
-});
+// Create optimized query client with advanced caching
+const queryClient = createQueryClient();
 
 const App = () => (
   <ErrorBoundary>
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/cadastro-atleta" element={<CadastroAtleta />} />
-              <Route path="/cadastro-responsavel" element={<CadastroResponsavel />} />
-              <Route path="/cadastro-sucesso" element={<CadastroSucesso />} />
-              <Route element={<Layout />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/admin/relacoes" element={<Relacoes />} />
-                <Route path="/eventos" element={<Eventos />} />
-                <Route path="/eventos/:id" element={<EventoDetalhes />} />
-                <Route path="/atletas" element={<Atletas />} />
-                <Route path="/atletas/:id" element={<AtletaDetalhes />} />
-                <Route path="/equipes" element={<Equipes />} />
-                <Route path="/equipes/:id" element={<EquipeDetalhes />} />
-                <Route path="/responsaveis" element={<Responsaveis />} />
-                <Route path="/minhas-equipes" element={<MinhasEquipes />} />
-                <Route path="/partidas" element={<Partidas />} />
-                <Route path="/rankings" element={<Rankings />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/cadastro-atleta" element={<CadastroAtleta />} />
+                <Route path="/cadastro-responsavel" element={<CadastroResponsavel />} />
+                <Route path="/cadastro-sucesso" element={<CadastroSucesso />} />
+                <Route element={<Layout />}>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/admin/relacoes" element={<Relacoes />} />
+                  <Route path="/eventos" element={<Eventos />} />
+                  <Route path="/eventos/:id" element={<EventoDetalhes />} />
+                  <Route path="/atletas" element={<Atletas />} />
+                  <Route path="/atletas/:id" element={<AtletaDetalhes />} />
+                  <Route path="/equipes" element={<Equipes />} />
+                  <Route path="/equipes/:id" element={<EquipeDetalhes />} />
+                  <Route path="/responsaveis" element={<Responsaveis />} />
+                  <Route path="/minhas-equipes" element={<MinhasEquipes />} />
+                  <Route path="/partidas" element={<Partidas />} />
+                  <Route path="/rankings" element={<Rankings />} />
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </ThemeProvider>
       </QueryClientProvider>
     </HelmetProvider>
   </ErrorBoundary>
