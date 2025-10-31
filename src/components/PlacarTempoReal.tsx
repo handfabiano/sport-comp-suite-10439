@@ -147,9 +147,9 @@ export default function PlacarTempoReal() {
 
             <div className="flex items-center justify-between">
               <div className="flex-1 text-center space-y-1">
-                <p className="font-semibold">{partida.equipe_a.nome}</p>
+                <p className="font-semibold">{partida.equipe_a?.nome ?? 'Equipe A'}</p>
                 <p className="text-3xl font-bold text-primary">
-                  {partida.placar_a}
+                  {partida.placar_a ?? 0}
                 </p>
               </div>
 
@@ -161,9 +161,9 @@ export default function PlacarTempoReal() {
               </div>
 
               <div className="flex-1 text-center space-y-1">
-                <p className="font-semibold">{partida.equipe_b.nome}</p>
+                <p className="font-semibold">{partida.equipe_b?.nome ?? 'Equipe B'}</p>
                 <p className="text-3xl font-bold text-primary">
-                  {partida.placar_b}
+                  {partida.placar_b ?? 0}
                 </p>
               </div>
             </div>
