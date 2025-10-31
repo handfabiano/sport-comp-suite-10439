@@ -9,6 +9,7 @@ import {
   Medal,
   LogOut,
   Shield,
+  Database,
 } from "lucide-react";
 import {
   Sidebar as SidebarComponent,
@@ -28,6 +29,7 @@ import { toast } from "sonner";
 const allMenuItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, roles: ["admin", "organizador", "responsavel", "atleta"] },
   { title: "Administração", url: "/admin", icon: Shield, roles: ["admin"] },
+  { title: "Popular Banco", url: "/popular-banco", icon: Database, roles: ["admin"] },
   { title: "Painel Organizador", url: "/organizador", icon: Trophy, roles: ["organizador", "admin"] },
   { title: "Painel Responsável", url: "/responsavel", icon: Users2, roles: ["responsavel"] },
   { title: "Eventos", url: "/eventos", icon: Calendar, roles: ["admin", "organizador"] },
