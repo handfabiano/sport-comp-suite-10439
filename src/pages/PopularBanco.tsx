@@ -35,18 +35,24 @@ export default function PopularBanco() {
 
       const userId = data.user.id;
 
-      // Criar profile
-      await supabase.from('profiles').upsert({
+      // Criar profile (ignorar se já existe)
+      const { error: profileError } = await supabase.from('profiles').insert({
         id: userId,
         nome,
         email
       });
+      if (profileError && !profileError.message?.includes('duplicate')) {
+        console.error('Erro ao criar profile:', profileError);
+      }
 
-      // Criar role
-      await supabase.from('user_roles').upsert({
+      // Criar role (ignorar se já existe)
+      const { error: roleError } = await supabase.from('user_roles').insert({
         user_id: userId,
         role
       });
+      if (roleError && !roleError.message?.includes('duplicate')) {
+        console.error('Erro ao criar role:', roleError);
+      }
 
       return userId;
     } catch (error: any) {
@@ -94,27 +100,45 @@ export default function PopularBanco() {
       // =====================================================
       addLog("\n🏆 Criando competição Copa Regional de Futebol 2025...");
 
-      const { data: evento, error: eventoError } = await supabase
+      // Tentar criar o evento ou buscar se já existe
+      let evento;
+      let eventoId;
+
+      const { data: eventoExistente } = await supabase
         .from("eventos")
-        .upsert({
-          nome: "Copa Regional de Futebol 2025",
-          descricao: "Campeonato regional de futebol com participação de equipes de diversas cidades. Categorias sub-17 e sub-19.",
-          local: "Estádio Municipal de São Paulo",
-          data_inicio: "2025-03-15",
-          data_fim: "2025-04-30",
-          status: "inscricoes_abertas",
-          organizador_id: organizadorId,
-          modalidade: "Futebol",
-          tipo_competicao: "Eliminação Simples"
-        }, { onConflict: 'nome' })
         .select()
+        .eq("nome", "Copa Regional de Futebol 2025")
         .single();
 
-      if (eventoError && !eventoError.message?.includes('duplicate')) {
-        throw new Error(`Erro ao criar evento: ${eventoError.message}`);
+      if (eventoExistente) {
+        evento = eventoExistente;
+        eventoId = eventoExistente.id;
+        addLog("  ℹ️ Evento já existe, usando evento existente");
+      } else {
+        const { data: novoEvento, error: eventoError } = await supabase
+          .from("eventos")
+          .insert({
+            nome: "Copa Regional de Futebol 2025",
+            descricao: "Campeonato regional de futebol com participação de equipes de diversas cidades. Categorias sub-17 e sub-19.",
+            local: "Estádio Municipal de São Paulo",
+            data_inicio: "2025-03-15",
+            data_fim: "2025-04-30",
+            status: "inscricoes_abertas",
+            organizador_id: organizadorId,
+            modalidade: "Futebol",
+            tipo_competicao: "Eliminação Simples"
+          })
+          .select()
+          .single();
+
+        if (eventoError) {
+          throw new Error(`Erro ao criar evento: ${eventoError.message}`);
+        }
+
+        evento = novoEvento;
+        eventoId = novoEvento.id;
       }
 
-      const eventoId = evento?.id;
       addLog("✅ Competição criada!");
 
       // =====================================================
@@ -148,30 +172,47 @@ export default function PopularBanco() {
         );
 
         // Criar registro na tabela responsaveis
-        await supabase.from("responsaveis").upsert({
+        const { error: respError } = await supabase.from("responsaveis").insert({
           user_id: userId,
           nome: resp.nome,
           email: resp.email,
           telefone: `(11) 9876-${5432 + i}`
-        }, { onConflict: 'user_id' });
+        });
 
-        // Criar equipe
-        const { data: equipe, error: equipeError } = await supabase
+        // Ignorar erro de duplicado
+        if (respError && !respError.message?.includes('duplicate')) {
+          throw respError;
+        }
+
+        // Criar equipe ou buscar se já existe
+        let equipe;
+        const { data: equipeExistente } = await supabase
           .from("equipes")
-          .upsert({
-            nome: resp.equipe,
-            cidade: resp.cidade,
-            estado: resp.estado,
-            descricao: `Equipe de ${resp.cidade}`,
-            responsavel_id: userId,
-            evento_id: eventoId
-          }, { onConflict: 'nome' })
           .select()
+          .eq("nome", resp.equipe)
           .single();
 
-        if (equipeError && !equipeError.message?.includes('duplicate')) {
-          addLog(`    ⚠️ Erro ao criar equipe: ${equipeError.message}`);
-          continue;
+        if (equipeExistente) {
+          equipe = equipeExistente;
+        } else {
+          const { data: novaEquipe, error: equipeError } = await supabase
+            .from("equipes")
+            .insert({
+              nome: resp.equipe,
+              cidade: resp.cidade,
+              estado: resp.estado,
+              descricao: `Equipe de ${resp.cidade}`,
+              responsavel_id: userId,
+              evento_id: eventoId
+            })
+            .select()
+            .single();
+
+          if (equipeError) {
+            addLog(`    ⚠️ Erro ao criar equipe: ${equipeError.message}`);
+            continue;
+          }
+          equipe = novaEquipe;
         }
 
         equipes.push({ ...equipe, responsavel_id: userId });
@@ -247,11 +288,21 @@ export default function PopularBanco() {
       addLog("\n📝 Criando inscrições...");
 
       for (const equipe of equipes) {
-        await supabase.from("inscricoes").upsert({
-          equipe_id: equipe.id,
-          evento_id: eventoId,
-          status: "pendente"
-        }, { onConflict: 'equipe_id,evento_id' });
+        // Verificar se já existe
+        const { data: inscricaoExistente } = await supabase
+          .from("inscricoes")
+          .select()
+          .eq("equipe_id", equipe.id)
+          .eq("evento_id", eventoId)
+          .single();
+
+        if (!inscricaoExistente) {
+          await supabase.from("inscricoes").insert({
+            equipe_id: equipe.id,
+            evento_id: eventoId,
+            status: "pendente"
+          });
+        }
       }
 
       addLog(`✅ ${equipes.length} inscrições criadas!`);
