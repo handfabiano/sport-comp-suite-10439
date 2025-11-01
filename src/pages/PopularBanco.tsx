@@ -96,7 +96,23 @@ export default function PopularBanco() {
       addLog("✅ Organizador criado!");
 
       // =====================================================
-      // 2. CRIAR EVENTO
+      // 2. FAZER LOGIN COMO ORGANIZADOR (para criar evento)
+      // =====================================================
+      addLog("\n🔐 Fazendo login como organizador...");
+
+      const { error: loginError } = await supabase.auth.signInWithPassword({
+        email: "carlos.mendes@eventos.com",
+        password: "senha123"
+      });
+
+      if (loginError) {
+        throw new Error(`Erro ao fazer login como organizador: ${loginError.message}`);
+      }
+
+      addLog("✅ Login realizado!");
+
+      // =====================================================
+      // 3. CRIAR EVENTO
       // =====================================================
       addLog("\n🏆 Criando competição Copa Regional de Futebol 2025...");
 
@@ -142,7 +158,7 @@ export default function PopularBanco() {
       addLog("✅ Competição criada!");
 
       // =====================================================
-      // 3. CRIAR RESPONSÁVEIS E EQUIPES
+      // 4. CRIAR RESPONSÁVEIS E EQUIPES
       // =====================================================
       const responsaveis = [
         { nome: "Ana Silva", email: "ana.silva@equipes.com", equipe: "Tigres FC", cidade: "São Paulo", estado: "SP" },
@@ -222,7 +238,7 @@ export default function PopularBanco() {
       addLog(`\n✅ ${equipes.length} equipes criadas!`);
 
       // =====================================================
-      // 4. CRIAR ATLETAS
+      // 5. CRIAR ATLETAS
       // =====================================================
       addLog("\n⚽ Criando 48 atletas (6 por equipe)...");
 
@@ -283,7 +299,7 @@ export default function PopularBanco() {
       addLog(`\n✅ ${totalAtletas} atletas criados!`);
 
       // =====================================================
-      // 5. CRIAR INSCRIÇÕES
+      // 6. CRIAR INSCRIÇÕES
       // =====================================================
       addLog("\n📝 Criando inscrições...");
 
