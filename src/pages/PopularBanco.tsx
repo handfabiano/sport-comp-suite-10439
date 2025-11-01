@@ -17,11 +17,60 @@ export default function PopularBanco() {
     setLogs(prev => [...prev, message]);
   };
 
+  const criarUsuario = async (email: string, senha: string, nome: string, role: string) => {
+    try {
+      // Criar usuário com signUp
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password: senha,
+        options: {
+          data: {
+            nome
+          }
+        }
+      });
+
+      if (error) throw error;
+      if (!data.user) throw new Error("Usuário não foi criado");
+
+      const userId = data.user.id;
+
+      // Criar profile
+      await supabase.from('profiles').upsert({
+        id: userId,
+        nome,
+        email
+      });
+
+      // Criar role
+      await supabase.from('user_roles').upsert({
+        user_id: userId,
+        role
+      });
+
+      return userId;
+    } catch (error: any) {
+      if (error.message?.includes('already registered')) {
+        // Usuário já existe, buscar ID
+        const { data } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', email)
+          .single();
+        return data?.id;
+      }
+      throw error;
+    }
+  };
+
   const popularBanco = async () => {
     setLoading(true);
     setLogs([]);
     setSucesso(false);
     setErro(false);
+
+    // Salvar sessão atual
+    const { data: { session: sessaoOriginal } } = await supabase.auth.getSession();
 
     try {
       addLog("🚀 Iniciando povoamento do banco de dados...");
@@ -31,20 +80,13 @@ export default function PopularBanco() {
       // =====================================================
       addLog("\n👤 Criando organizador Carlos Mendes...");
 
-      const { data: orgData, error: orgError } = await supabase.functions.invoke("admin-create-user", {
-        body: {
-          email: "carlos.mendes@eventos.com",
-          password: "senha123",
-          nome: "Carlos Mendes",
-          role: "organizador"
-        }
-      });
+      const organizadorId = await criarUsuario(
+        "carlos.mendes@eventos.com",
+        "senha123",
+        "Carlos Mendes",
+        "organizador"
+      );
 
-      if (orgError && !orgError.message?.includes("already")) {
-        throw new Error(`Erro ao criar organizador: ${orgError.message}`);
-      }
-
-      const organizadorId = orgData?.user?.id;
       addLog("✅ Organizador criado!");
 
       // =====================================================
@@ -54,7 +96,7 @@ export default function PopularBanco() {
 
       const { data: evento, error: eventoError } = await supabase
         .from("eventos")
-        .insert({
+        .upsert({
           nome: "Copa Regional de Futebol 2025",
           descricao: "Campeonato regional de futebol com participação de equipes de diversas cidades. Categorias sub-17 e sub-19.",
           local: "Estádio Municipal de São Paulo",
@@ -64,11 +106,15 @@ export default function PopularBanco() {
           organizador_id: organizadorId,
           modalidade: "Futebol",
           tipo_competicao: "Eliminação Simples"
-        })
+        }, { onConflict: 'nome' })
         .select()
         .single();
 
-      if (eventoError) throw new Error(`Erro ao criar evento: ${eventoError.message}`);
+      if (eventoError && !eventoError.message?.includes('duplicate')) {
+        throw new Error(`Erro ao criar evento: ${eventoError.message}`);
+      }
+
+      const eventoId = evento?.id;
       addLog("✅ Competição criada!");
 
       // =====================================================
@@ -94,21 +140,12 @@ export default function PopularBanco() {
         addLog(`  ${i + 1}. ${resp.nome} → ${resp.equipe}`);
 
         // Criar responsável
-        const { data: respData, error: respError } = await supabase.functions.invoke("admin-create-user", {
-          body: {
-            email: resp.email,
-            password: "senha123",
-            nome: resp.nome,
-            role: "responsavel"
-          }
-        });
-
-        if (respError && !respError.message?.includes("already")) {
-          addLog(`    ⚠️ Aviso: ${respError.message}`);
-          continue;
-        }
-
-        const userId = respData?.user?.id;
+        const userId = await criarUsuario(
+          resp.email,
+          "senha123",
+          resp.nome,
+          "responsavel"
+        );
 
         // Criar registro na tabela responsaveis
         await supabase.from("responsaveis").upsert({
@@ -116,23 +153,23 @@ export default function PopularBanco() {
           nome: resp.nome,
           email: resp.email,
           telefone: `(11) 9876-${5432 + i}`
-        });
+        }, { onConflict: 'user_id' });
 
         // Criar equipe
         const { data: equipe, error: equipeError } = await supabase
           .from("equipes")
-          .insert({
+          .upsert({
             nome: resp.equipe,
             cidade: resp.cidade,
             estado: resp.estado,
             descricao: `Equipe de ${resp.cidade}`,
             responsavel_id: userId,
-            evento_id: evento.id
-          })
+            evento_id: eventoId
+          }, { onConflict: 'nome' })
           .select()
           .single();
 
-        if (equipeError) {
+        if (equipeError && !equipeError.message?.includes('duplicate')) {
           addLog(`    ⚠️ Erro ao criar equipe: ${equipeError.message}`);
           continue;
         }
@@ -186,7 +223,9 @@ export default function PopularBanco() {
             .single();
 
           if (atletaError) {
-            addLog(`    ⚠️ Erro: ${atletaError.message}`);
+            if (!atletaError.message?.includes('duplicate')) {
+              addLog(`    ⚠️ Erro: ${atletaError.message}`);
+            }
             continue;
           }
 
@@ -208,11 +247,11 @@ export default function PopularBanco() {
       addLog("\n📝 Criando inscrições...");
 
       for (const equipe of equipes) {
-        await supabase.from("inscricoes").insert({
+        await supabase.from("inscricoes").upsert({
           equipe_id: equipe.id,
-          evento_id: evento.id,
+          evento_id: eventoId,
           status: "pendente"
-        });
+        }, { onConflict: 'equipe_id,evento_id' });
       }
 
       addLog(`✅ ${equipes.length} inscrições criadas!`);
@@ -235,6 +274,10 @@ export default function PopularBanco() {
       addLog("  Organizador: carlos.mendes@eventos.com / senha123");
       addLog("  Responsáveis: todos com senha123");
 
+      addLog("\n📧 IMPORTANTE:");
+      addLog("  Verifique o email de confirmação dos usuários!");
+      addLog("  (Se necessário, confirme os emails manualmente no Supabase)");
+
       setSucesso(true);
       toast.success("Banco populado com sucesso!");
 
@@ -243,6 +286,10 @@ export default function PopularBanco() {
       setErro(true);
       toast.error("Erro ao popular banco: " + error.message);
     } finally {
+      // Restaurar sessão original
+      if (sessaoOriginal) {
+        await supabase.auth.setSession(sessaoOriginal);
+      }
       setLoading(false);
     }
   };
@@ -268,6 +315,9 @@ export default function PopularBanco() {
                 <li>48 Atletas (6 por equipe)</li>
                 <li>8 Inscrições pendentes</li>
               </ul>
+              <p className="mt-2 text-sm font-semibold">
+                ⚠️ Pode levar 1-2 minutos para completar
+              </p>
             </AlertDescription>
           </Alert>
 
@@ -281,7 +331,7 @@ export default function PopularBanco() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Populando...
+                  Populando... Aguarde
                 </>
               ) : (
                 <>
@@ -298,6 +348,7 @@ export default function PopularBanco() {
                 <CardTitle className="text-sm flex items-center gap-2">
                   {sucesso && <CheckCircle2 className="h-4 w-4 text-green-500" />}
                   {erro && <XCircle className="h-4 w-4 text-red-500" />}
+                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                   Log de Execução
                 </CardTitle>
               </CardHeader>
@@ -319,6 +370,7 @@ export default function PopularBanco() {
                 <ul className="list-disc list-inside mt-2">
                   <li>Fazer login como organizador: carlos.mendes@eventos.com / senha123</li>
                   <li>Fazer login como responsável: ana.silva@equipes.com / senha123</li>
+                  <li>Ir em "Painel Organizador" → "Inscrições" e aprovar as 8 equipes</li>
                   <li>Testar todo o fluxo do sistema!</li>
                 </ul>
               </AlertDescription>
