@@ -142,7 +142,7 @@ export default function PopularBanco() {
             status: "inscricoes_abertas",
             organizador_id: organizadorId,
             modalidade: "futebol",
-            tipo_competicao: "Eliminação Simples"
+            tipo_competicao: "eliminatorio"
           })
           .select()
           .single();
