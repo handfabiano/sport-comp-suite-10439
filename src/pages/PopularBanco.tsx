@@ -125,7 +125,7 @@ export default function PopularBanco() {
             data_fim: "2025-04-30",
             status: "inscricoes_abertas",
             organizador_id: organizadorId,
-            modalidade: "Futebol",
+            modalidade: "futebol",
             tipo_competicao: "Eliminação Simples"
           })
           .select()
