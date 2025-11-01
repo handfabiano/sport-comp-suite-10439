@@ -82,7 +82,7 @@ export default function PopularBanco() {
       addLog("🚀 Iniciando povoamento do banco de dados...");
 
       // =====================================================
-      // 1. CRIAR ORGANIZADOR
+      // 1. CRIAR TODOS OS USUÁRIOS (sem fazer login)
       // =====================================================
       addLog("\n👤 Criando organizador Carlos Mendes...");
 
@@ -95,8 +95,39 @@ export default function PopularBanco() {
 
       addLog("✅ Organizador criado!");
 
+      // Criar dados dos responsáveis
+      const responsaveisData = [
+        { nome: "Ana Silva", email: "ana.silva@equipes.com", equipe: "Tigres FC", cidade: "São Paulo", estado: "SP" },
+        { nome: "Bruno Santos", email: "bruno.santos@equipes.com", equipe: "Águias United", cidade: "Rio de Janeiro", estado: "RJ" },
+        { nome: "Carla Oliveira", email: "carla.oliveira@equipes.com", equipe: "Leões do Sul", cidade: "Curitiba", estado: "PR" },
+        { nome: "Diego Costa", email: "diego.costa@equipes.com", equipe: "Falcões FC", cidade: "Campinas", estado: "SP" },
+        { nome: "Eduardo Lima", email: "eduardo.lima@equipes.com", equipe: "Panteras Negras", cidade: "Santos", estado: "SP" },
+        { nome: "Fernanda Rocha", email: "fernanda.rocha@equipes.com", equipe: "Tubarões Azuis", cidade: "Niterói", estado: "RJ" },
+        { nome: "Gabriel Martins", email: "gabriel.martins@equipes.com", equipe: "Lobos da Serra", cidade: "Petrópolis", estado: "RJ" },
+        { nome: "Helena Alves", email: "helena.alves@equipes.com", equipe: "Dragões Vermelhos", cidade: "Sorocaba", estado: "SP" }
+      ];
+
+      addLog("\n👥 Criando 8 responsáveis (usuários)...");
+
+      const responsaveisUsuarios = [];
+      for (let i = 0; i < responsaveisData.length; i++) {
+        const resp = responsaveisData[i];
+        addLog(`  ${i + 1}. ${resp.nome}`);
+
+        const userId = await criarUsuario(
+          resp.email,
+          "senha123",
+          resp.nome,
+          "responsavel"
+        );
+
+        responsaveisUsuarios.push({ ...resp, userId });
+      }
+
+      addLog("✅ 8 responsáveis (usuários) criados!");
+
       // =====================================================
-      // 2. FAZER LOGIN COMO ORGANIZADOR (para criar evento)
+      // 2. FAZER LOGIN COMO ORGANIZADOR
       // =====================================================
       addLog("\n🔐 Fazendo login como organizador...");
 
@@ -158,38 +189,19 @@ export default function PopularBanco() {
       addLog("✅ Competição criada!");
 
       // =====================================================
-      // 4. CRIAR RESPONSÁVEIS E EQUIPES
+      // 4. CRIAR RESPONSÁVEIS (tabela) E EQUIPES
       // =====================================================
-      const responsaveis = [
-        { nome: "Ana Silva", email: "ana.silva@equipes.com", equipe: "Tigres FC", cidade: "São Paulo", estado: "SP" },
-        { nome: "Bruno Santos", email: "bruno.santos@equipes.com", equipe: "Águias United", cidade: "Rio de Janeiro", estado: "RJ" },
-        { nome: "Carla Oliveira", email: "carla.oliveira@equipes.com", equipe: "Leões do Sul", cidade: "Curitiba", estado: "PR" },
-        { nome: "Diego Costa", email: "diego.costa@equipes.com", equipe: "Falcões FC", cidade: "Campinas", estado: "SP" },
-        { nome: "Eduardo Lima", email: "eduardo.lima@equipes.com", equipe: "Panteras Negras", cidade: "Santos", estado: "SP" },
-        { nome: "Fernanda Rocha", email: "fernanda.rocha@equipes.com", equipe: "Tubarões Azuis", cidade: "Niterói", estado: "RJ" },
-        { nome: "Gabriel Martins", email: "gabriel.martins@equipes.com", equipe: "Lobos da Serra", cidade: "Petrópolis", estado: "RJ" },
-        { nome: "Helena Alves", email: "helena.alves@equipes.com", equipe: "Dragões Vermelhos", cidade: "Sorocaba", estado: "SP" }
-      ];
-
-      addLog("\n👥 Criando 8 responsáveis e equipes...");
+      addLog("\n👥 Criando registros de responsáveis e equipes...");
 
       const equipes = [];
 
-      for (let i = 0; i < responsaveis.length; i++) {
-        const resp = responsaveis[i];
+      for (let i = 0; i < responsaveisUsuarios.length; i++) {
+        const resp = responsaveisUsuarios[i];
         addLog(`  ${i + 1}. ${resp.nome} → ${resp.equipe}`);
-
-        // Criar responsável
-        const userId = await criarUsuario(
-          resp.email,
-          "senha123",
-          resp.nome,
-          "responsavel"
-        );
 
         // Criar registro na tabela responsaveis
         const { error: respError } = await supabase.from("responsaveis").insert({
-          user_id: userId,
+          user_id: resp.userId,
           nome: resp.nome,
           email: resp.email,
           telefone: `(11) 9876-${5432 + i}`
@@ -218,7 +230,7 @@ export default function PopularBanco() {
               cidade: resp.cidade,
               estado: resp.estado,
               descricao: `Equipe de ${resp.cidade}`,
-              responsavel_id: userId,
+              responsavel_id: resp.userId,
               evento_id: eventoId
             })
             .select()
@@ -231,7 +243,7 @@ export default function PopularBanco() {
           equipe = novaEquipe;
         }
 
-        equipes.push({ ...equipe, responsavel_id: userId });
+        equipes.push({ ...equipe, responsavel_id: resp.userId });
         addLog(`    ✅ Criado!`);
       }
 
