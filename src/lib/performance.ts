@@ -242,9 +242,8 @@ export function usePerformance(componentName: string) {
 export function useWebVitals() {
   useEffect(() => {
     // Dynamically import web-vitals to reduce bundle size
-    import('web-vitals').then(({ onCLS, onFID, onFCP, onLCP, onTTFB, onINP }) => {
+    import('web-vitals').then(({ onCLS, onFCP, onLCP, onTTFB, onINP }) => {
       onCLS(performanceMonitor.trackWebVitals.bind(performanceMonitor));
-      onFID(performanceMonitor.trackWebVitals.bind(performanceMonitor));
       onFCP(performanceMonitor.trackWebVitals.bind(performanceMonitor));
       onLCP(performanceMonitor.trackWebVitals.bind(performanceMonitor));
       onTTFB(performanceMonitor.trackWebVitals.bind(performanceMonitor));

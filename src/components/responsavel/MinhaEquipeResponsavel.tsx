@@ -13,8 +13,6 @@ interface Equipe {
   id: string;
   nome: string;
   cidade?: string;
-  estado?: string;
-  descricao?: string;
   evento_id?: string;
 }
 
@@ -25,8 +23,6 @@ export default function MinhaEquipeResponsavel() {
   const [formData, setFormData] = useState({
     nome: "",
     cidade: "",
-    estado: "",
-    descricao: "",
   });
 
   useEffect(() => {
@@ -54,8 +50,6 @@ export default function MinhaEquipeResponsavel() {
         setFormData({
           nome: data.nome || "",
           cidade: data.cidade || "",
-          estado: data.estado || "",
-          descricao: data.descricao || "",
         });
       }
     } catch (error: any) {
@@ -85,27 +79,15 @@ export default function MinhaEquipeResponsavel() {
           .update({
             nome: formData.nome,
             cidade: formData.cidade || null,
-            estado: formData.estado || null,
-            descricao: formData.descricao || null,
           })
           .eq("id", equipe.id);
 
         if (error) throw error;
         toast.success("Equipe atualizada!");
       } else {
-        // Criar nova equipe
-        const { error } = await supabase
-          .from("equipes")
-          .insert({
-            nome: formData.nome,
-            cidade: formData.cidade || null,
-            estado: formData.estado || null,
-            descricao: formData.descricao || null,
-            responsavel_id: user.id,
-          });
-
-        if (error) throw error;
-        toast.success("Equipe criada com sucesso!");
+        // Criar nova equipe - requer também categoria e modalidade
+        toast.error("Para criar uma nova equipe, use o painel do organizador");
+        return;
       }
 
       setEditMode(false);
@@ -174,36 +156,13 @@ export default function MinhaEquipeResponsavel() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="cidade">Cidade</Label>
-              <Input
-                id="cidade"
-                value={formData.cidade}
-                onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
-                placeholder="São Paulo"
-              />
-            </div>
-            <div>
-              <Label htmlFor="estado">Estado</Label>
-              <Input
-                id="estado"
-                value={formData.estado}
-                onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
-                placeholder="SP"
-                maxLength={2}
-              />
-            </div>
-          </div>
-
           <div>
-            <Label htmlFor="descricao">Descrição</Label>
-            <Textarea
-              id="descricao"
-              value={formData.descricao}
-              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-              placeholder="Breve descrição sobre a equipe..."
-              rows={4}
+            <Label htmlFor="cidade">Cidade</Label>
+            <Input
+              id="cidade"
+              value={formData.cidade}
+              onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
+              placeholder="São Paulo"
             />
           </div>
 
@@ -220,8 +179,6 @@ export default function MinhaEquipeResponsavel() {
                   setFormData({
                     nome: equipe.nome || "",
                     cidade: equipe.cidade || "",
-                    estado: equipe.estado || "",
-                    descricao: equipe.descricao || "",
                   });
                 }}
               >
@@ -238,21 +195,10 @@ export default function MinhaEquipeResponsavel() {
               <p className="text-lg font-semibold">{equipe?.nome}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Localização</p>
-              <p className="text-lg font-semibold">
-                {equipe?.cidade && equipe?.estado
-                  ? `${equipe.cidade} - ${equipe.estado}`
-                  : equipe?.cidade || equipe?.estado || "-"}
-              </p>
+              <p className="text-sm text-muted-foreground">Cidade</p>
+              <p className="text-lg font-semibold">{equipe?.cidade || "-"}</p>
             </div>
           </div>
-
-          {equipe?.descricao && (
-            <div>
-              <p className="text-sm text-muted-foreground">Descrição</p>
-              <p className="text-base mt-1">{equipe.descricao}</p>
-            </div>
-          )}
 
           <Alert>
             <AlertDescription>

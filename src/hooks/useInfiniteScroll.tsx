@@ -56,7 +56,7 @@ export function useInfiniteScroll<T>({
       const to = from + pageSize - 1;
 
       let query = supabase
-        .from(table)
+        .from(table as any)
         .select(select, { count: 'exact' })
         .range(from, to);
 
@@ -74,13 +74,13 @@ export function useInfiniteScroll<T>({
         });
       }
 
-      return executeSupabaseQuery(() => query, {
-        resource: table,
-        action: 'fetch',
-      }).then((result: any) => ({
-        data: result,
-        nextPage: result.length === pageSize ? pageParam + 1 : undefined,
-      }));
+      const { data, error } = await query;
+      if (error) throw error;
+
+      return {
+        data: data || [],
+        nextPage: (data?.length || 0) === pageSize ? pageParam + 1 : undefined,
+      };
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: 0,
@@ -106,7 +106,7 @@ export function useInfiniteScroll<T>({
   );
 
   // Flatten pages into single array
-  const flattenedData = data?.pages.flatMap((page) => page.data) ?? [];
+  const flattenedData = (data?.pages.flatMap((page) => page.data) ?? []) as T[];
 
   return {
     data: flattenedData,
@@ -164,7 +164,7 @@ export function usePagination<T>({
       const to = from + pageSize - 1;
 
       let query = supabase
-        .from(table)
+        .from(table as any)
         .select(select, { count: 'exact' })
         .range(from, to);
 
@@ -182,12 +182,10 @@ export function usePagination<T>({
         });
       }
 
-      const result = await executeSupabaseQuery(() => query, {
-        resource: table,
-        action: 'fetch',
-      });
+      const { data, error, count } = await query;
+      if (error) throw error;
 
-      return result;
+      return { data: data || [], count: count || 0 };
     },
     enabled,
   });

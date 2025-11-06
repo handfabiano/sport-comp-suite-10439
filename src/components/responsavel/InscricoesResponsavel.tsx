@@ -130,12 +130,22 @@ export default function InscricoesResponsavel() {
     if (!confirm(`Deseja inscrever sua equipe em "${eventoNome}"?`)) return;
 
     try {
+      // Buscar equipe para obter categoria
+      const { data: equipe, error: equipeError } = await supabase
+        .from("equipes")
+        .select("categoria")
+        .eq("id", equipeId)
+        .single();
+
+      if (equipeError) throw equipeError;
+
       const { error } = await supabase
         .from("inscricoes")
         .insert({
           equipe_id: equipeId,
           evento_id: eventoId,
           status: "pendente",
+          categoria: equipe.categoria,
         });
 
       if (error) throw error;

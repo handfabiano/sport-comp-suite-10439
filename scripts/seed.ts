@@ -12,7 +12,8 @@ if (!supabaseUrl || !supabaseServiceKey) {
   process.exit(1);
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+// Cliente admin com service role key que bypassa RLS
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
     autoRefreshToken: false,
     persistSession: false
@@ -28,7 +29,7 @@ async function popularBanco() {
     // =====================================================
     console.log('👤 Criando organizador...');
 
-    const { data: organizador, error: orgError } = await supabase.auth.admin.createUser({
+    const { data: organizador, error: orgError } = await supabaseAdmin.auth.admin.createUser({
       email: 'carlos.mendes@eventos.com',
       password: 'senha123',
       email_confirm: true,
@@ -46,13 +47,13 @@ async function popularBanco() {
 
     // Criar profile e role do organizador
     if (organizadorId) {
-      await supabase.from('profiles').upsert({
+      await supabaseAdmin.from('profiles').upsert({
         id: organizadorId,
         nome: 'Carlos Mendes',
         email: 'carlos.mendes@eventos.com'
       });
 
-      await supabase.from('user_roles').upsert({
+      await supabaseAdmin.from('user_roles').upsert({
         user_id: organizadorId,
         role: 'organizador'
       });
@@ -63,7 +64,7 @@ async function popularBanco() {
     // =====================================================
     console.log('\n🏆 Criando competição...');
 
-    const { data: evento, error: eventoError } = await supabase
+    const { data: evento, error: eventoError } = await supabaseAdmin
       .from('eventos')
       .insert({
         nome: 'Copa Regional de Futebol 2025',
@@ -105,7 +106,7 @@ async function popularBanco() {
       console.log(`\n  ${i + 1}. ${resp.nome} → ${resp.equipe}`);
 
       // Criar usuário responsável
-      const { data: user, error: userError } = await supabase.auth.admin.createUser({
+      const { data: user, error: userError } = await supabaseAdmin.auth.admin.createUser({
         email: resp.email,
         password: 'senha123',
         email_confirm: true,
@@ -127,20 +128,20 @@ async function popularBanco() {
       }
 
       // Criar profile
-      await supabase.from('profiles').upsert({
+      await supabaseAdmin.from('profiles').upsert({
         id: userId,
         nome: resp.nome,
         email: resp.email
       });
 
       // Criar role
-      await supabase.from('user_roles').upsert({
+      await supabaseAdmin.from('user_roles').upsert({
         user_id: userId,
         role: 'responsavel'
       });
 
       // Criar registro na tabela responsaveis
-      await supabase.from('responsaveis').upsert({
+      await supabaseAdmin.from('responsaveis').upsert({
         user_id: userId,
         nome: resp.nome,
         email: resp.email,
@@ -148,7 +149,7 @@ async function popularBanco() {
       });
 
       // Criar equipe
-      const { data: equipe, error: equipeError } = await supabase
+      const { data: equipe, error: equipeError } = await supabaseAdmin
         .from('equipes')
         .insert({
           nome: resp.equipe,
@@ -210,7 +211,7 @@ async function popularBanco() {
         const categoria = idade <= 17 ? 'Sub-17' : 'Sub-19';
 
         // Criar atleta
-        const { data: atleta, error: atletaError } = await supabase
+        const { data: atleta, error: atletaError } = await supabaseAdmin
           .from('atletas')
           .insert({
             nome: nomes[e][a],
@@ -229,7 +230,7 @@ async function popularBanco() {
         }
 
         // Vincular atleta à equipe
-        await supabase.from('equipe_atletas').insert({
+        await supabaseAdmin.from('equipe_atletas').insert({
           equipe_id: equipe.id,
           atleta_id: atleta.id
         });
@@ -247,10 +248,11 @@ async function popularBanco() {
     console.log('\n📝 Criando inscrições...');
 
     for (const equipe of equipes) {
-      await supabase.from('inscricoes').insert({
+      await supabaseAdmin.from('inscricoes').insert({
         equipe_id: equipe.id,
         evento_id: evento.id,
-        status: 'pendente'
+        status: 'pendente',
+        categoria: 'Sub-17' // Usar a primeira categoria disponível
       });
     }
 

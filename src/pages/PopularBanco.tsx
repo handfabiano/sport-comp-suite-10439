@@ -46,10 +46,10 @@ export default function PopularBanco() {
       }
 
       // Criar role (ignorar se já existe)
-      const { error: roleError } = await supabase.from('user_roles').insert({
+      const { error: roleError } = await supabase.from('user_roles').insert([{
         user_id: userId,
-        role
-      });
+        role: role as any
+      }]);
       if (roleError && !roleError.message?.includes('duplicate')) {
         console.error('Erro ao criar role:', roleError);
       }
@@ -228,10 +228,11 @@ export default function PopularBanco() {
             .insert({
               nome: resp.equipe,
               cidade: resp.cidade,
-              estado: resp.estado,
-              descricao: `Equipe de ${resp.cidade}`,
               responsavel_id: resp.userId,
-              evento_id: eventoId
+              evento_id: eventoId,
+              categoria: 'Sub-17',
+              modalidade: 'futebol',
+              sexo: 'masculino'
             })
             .select()
             .single();
@@ -328,7 +329,8 @@ export default function PopularBanco() {
           await supabase.from("inscricoes").insert({
             equipe_id: equipe.id,
             evento_id: eventoId,
-            status: "pendente"
+            status: "pendente",
+            categoria: 'Sub-17'
           });
         }
       }

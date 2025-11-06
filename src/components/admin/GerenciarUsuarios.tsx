@@ -97,7 +97,7 @@ export default function GerenciarUsuarios() {
           .delete()
           .eq("user_id", usuarioSelecionado.id);
 
-        if (role !== "sem_role") {
+        if (role) {
           const { error: roleError } = await supabase
             .from("user_roles")
             .insert({ user_id: usuarioSelecionado.id, role });
