@@ -49,11 +49,45 @@ export default function Eventos() {
   const [editingEvento, setEditingEvento] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [minhaEquipe, setMinhaEquipe] = useState<any>(null);
+  const [inscricaoModal, setInscricaoModal] = useState<string | null>(null);
   const itemsPerPage = 12;
 
   useEffect(() => {
-    fetchEventos();
+    checkUserRole();
   }, []);
+
+  useEffect(() => {
+    if (userRole !== null) {
+      fetchEventos();
+    }
+  }, [userRole, minhaEquipe]);
+
+  const checkUserRole = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Verificar role
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    setUserRole(roleData?.role || null);
+
+    // Se for responsável, buscar equipe
+    if (roleData?.role === 'responsavel') {
+      const { data: equipe } = await supabase
+        .from("equipes")
+        .select("*")
+        .eq("responsavel_id", user.id)
+        .maybeSingle();
+      
+      setMinhaEquipe(equipe);
+    }
+  };
 
   useEffect(() => {
     const filtered = eventos.filter(evento => 
@@ -74,10 +108,57 @@ export default function Eventos() {
       .order("data_inicio", { ascending: false });
 
     if (!error && data) {
-      setEventos(data);
-      setFilteredEventos(data);
+      // Se for responsável, verificar inscrições
+      if (minhaEquipe) {
+        const { data: inscricoes } = await supabase
+          .from("inscricoes")
+          .select("evento_id, status")
+          .eq("equipe_id", minhaEquipe.id);
+
+        const inscricoesMap = new Map(inscricoes?.map(i => [i.evento_id, i.status]));
+        
+        const eventosComInscricao = data.map(e => ({
+          ...e,
+          inscricaoStatus: inscricoesMap.get(e.id)
+        }));
+
+        setEventos(eventosComInscricao as any);
+        setFilteredEventos(eventosComInscricao as any);
+      } else {
+        setEventos(data);
+        setFilteredEventos(data);
+      }
     }
     setLoading(false);
+  };
+
+  const handleInscrever = async (eventoId: string, eventoNome: string) => {
+    if (!minhaEquipe) {
+      toast.error("Você precisa ter uma equipe para se inscrever");
+      return;
+    }
+
+    if (!window.confirm(`Deseja inscrever sua equipe "${minhaEquipe.nome}" no evento "${eventoNome}"?`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("inscricoes")
+        .insert({
+          equipe_id: minhaEquipe.id,
+          evento_id: eventoId,
+          status: "pendente",
+          categoria: minhaEquipe.categoria,
+        });
+
+      if (error) throw error;
+
+      toast.success("Inscrição enviada com sucesso! Aguarde a aprovação do organizador.");
+      fetchEventos();
+    } catch (error: any) {
+      toast.error("Erro ao fazer inscrição: " + error.message);
+    }
   };
 
   const totalPages = Math.ceil(filteredEventos.length / itemsPerPage);
@@ -220,45 +301,61 @@ export default function Eventos() {
                 )}
               </CardContent>
               <div className="flex flex-col gap-2 p-4 pt-0 border-t">
-                {evento.status === 'inscricoes_abertas' && (
-                  <Button
-                    size="sm"
-                    className="w-full bg-gradient-primary"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.location.href = `/eventos/${evento.id}`;
-                    }}
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    Inscrever Equipe
-                  </Button>
+                {evento.status === 'inscricoes_abertas' && userRole === 'responsavel' && minhaEquipe && (
+                  <>
+                    {(evento as any).inscricaoStatus ? (
+                      <Badge 
+                        className="w-full justify-center py-2"
+                        variant={(evento as any).inscricaoStatus === 'aprovada' ? 'default' : 
+                                (evento as any).inscricaoStatus === 'pendente' ? 'secondary' : 'destructive'}
+                      >
+                        {(evento as any).inscricaoStatus === 'aprovada' ? '✓ Inscrito' : 
+                         (evento as any).inscricaoStatus === 'pendente' ? '⏱ Aguardando Aprovação' : 
+                         '✗ Rejeitado'}
+                      </Badge>
+                    ) : (
+                      <Button
+                        size="sm"
+                        className="w-full bg-gradient-primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleInscrever(evento.id, evento.nome);
+                        }}
+                      >
+                        <Users className="h-4 w-4 mr-2" />
+                        Inscrever Minha Equipe
+                      </Button>
+                    )}
+                  </>
                 )}
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingEvento(evento);
-                    }}
-                  >
-                    <Edit className="h-4 w-4 mr-1" />
-                    Editar
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="flex-1"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeleteId(evento.id);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Excluir
-                  </Button>
-                </div>
+                {(!userRole || userRole === 'organizador') && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingEvento(evento);
+                      }}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Editar
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="flex-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteId(evento.id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Excluir
+                    </Button>
+                  </div>
+                )}
               </div>
             </Card>
           ))}
