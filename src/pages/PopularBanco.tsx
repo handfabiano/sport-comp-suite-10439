@@ -19,13 +19,21 @@ export default function PopularBanco() {
 
   const criarUsuario = async (email: string, senha: string, nome: string, role: string) => {
     try {
-      // Criar usuário com signUp
+      // Mapear role para perfil
+      const perfilMap: Record<string, string> = {
+        'organizador': 'organizador',
+        'responsavel': 'responsavel',
+        'atleta': 'atleta'
+      };
+
+      // Criar usuário com signUp passando o perfil nos metadados
       const { data, error } = await supabase.auth.signUp({
         email,
         password: senha,
         options: {
           data: {
-            nome
+            nome,
+            perfil: perfilMap[role] || 'visitante'
           }
         }
       });
@@ -35,24 +43,8 @@ export default function PopularBanco() {
 
       const userId = data.user.id;
 
-      // Criar profile (ignorar se já existe)
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: userId,
-        nome,
-        email
-      });
-      if (profileError && !profileError.message?.includes('duplicate')) {
-        console.error('Erro ao criar profile:', profileError);
-      }
-
-      // Criar role (ignorar se já existe)
-      const { error: roleError } = await supabase.from('user_roles').insert([{
-        user_id: userId,
-        role: role as any
-      }]);
-      if (roleError && !roleError.message?.includes('duplicate')) {
-        console.error('Erro ao criar role:', roleError);
-      }
+      // Aguardar um pouco para o trigger processar
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       return userId;
     } catch (error: any) {
@@ -142,6 +134,27 @@ export default function PopularBanco() {
 
       addLog("✅ Login realizado!");
 
+      // Verificar se o organizador tem a role correta
+      const { data: roleCheck } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', organizadorId)
+        .eq('role', 'organizador')
+        .single();
+
+      if (!roleCheck) {
+        addLog("⚠️ Role de organizador não encontrada, criando...");
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert([{ user_id: organizadorId, role: 'organizador' as any }]);
+        
+        if (roleError) {
+          addLog(`❌ Erro ao criar role: ${roleError.message}`);
+        } else {
+          addLog("✅ Role criada!");
+        }
+      }
+
       // =====================================================
       // 3. CRIAR EVENTO
       // =====================================================
@@ -207,9 +220,27 @@ export default function PopularBanco() {
           telefone: `(11) 9876-${5432 + i}`
         });
 
-        // Ignorar erro de duplicado
-        if (respError && !respError.message?.includes('duplicate')) {
-          throw respError;
+        // Ignorar erro de duplicado ou RLS (pode já existir)
+        if (respError) {
+          if (respError.message?.includes('duplicate')) {
+            addLog(`    ℹ️ Responsável já existe`);
+          } else if (respError.message?.includes('row-level security')) {
+            addLog(`    ⚠️ Erro RLS: ${respError.message}`);
+            addLog(`    ℹ️ Tentando aguardar propagação de roles...`);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Tentar novamente
+            const { error: respError2 } = await supabase.from("responsaveis").insert({
+              user_id: resp.userId,
+              nome: resp.nome,
+              email: resp.email,
+              telefone: `(11) 9876-${5432 + i}`
+            });
+            if (respError2 && !respError2.message?.includes('duplicate')) {
+              addLog(`    ❌ Erro persistente: ${respError2.message}`);
+            }
+          } else {
+            throw respError;
+          }
         }
 
         // Criar equipe ou buscar se já existe
